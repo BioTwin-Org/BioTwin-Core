@@ -35,16 +35,16 @@ BioTwin-Core operates on a modular "Hybrid Modeling" architecture, combining phy
 
 ```mermaid
 graph TD
-    A[User / Researcher] -->|Defines Therapeutic Goal| B(Orchestrator API)
-    B --> C{Generative Design Engine}
-    C -->|NVIDIA BioNeMo| D[Protein Generation (ESM-2)]
-    C -->|DiffDock| E[Target Binding Validation]
-    E --> F[BioTwin Simulation Core]
-    F -->|Agent-Based| G[Cellular Interactions]
-    F -->|Mechanistic| H[Fluid/Chemical Diffusion]
+    A["User / Researcher"] -->|Defines Therapeutic Goal| B("Orchestrator API")
+    B --> C{"Generative Design Engine"}
+    C -->|"NVIDIA BioNeMo"| D["Protein Generation (ESM-2)"]
+    C -->|DiffDock| E["Target Binding Validation"]
+    E --> F["BioTwin Simulation Core"]
+    F -->|"Agent-Based"| G["Cellular Interactions"]
+    F -->|Mechanistic| H["Fluid/Chemical Diffusion"]
     G <--> H
-    F --> I[Output: Efficacy Score]
-    I -->|Feedback Loop| C
+    F --> I["Output: Efficacy Score"]
+    I -->|"Feedback Loop"| C
 
 ```
 
