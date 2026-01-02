@@ -11,28 +11,31 @@ def run_simulation_pipeline():
     print("🚀 Starting BioTwin Core v0.1 Alpha...")
     print("========================================")
 
-    # 1. Initialize Digital Twin (Virtual Patient with Fibrosis)
+    # 1. Initialize Digital Twin
     print("\n🏥 Initializing Liver Lobule Digital Twin...")
-    patient_twin = LiverLobule(fibrosis_level=0.90) # Severe fibrosis
+    patient_twin = LiverLobule(fibrosis_level=0.90)
     print(f"   Initial State: {patient_twin.get_status()}")
 
     # 2. Initialize AI Engine
-    ai_engine = BioNeMoClient() # Defaults to mock mode if no API key found
+    ai_engine = BioNeMoClient()
 
     # 3. Design and Treatment Loop
-    # We will attempt to generate 3 different candidates
     for i in range(1, 4):
         print(f"\n🧪 --- Experimentation Cycle {i} ---")
         
-        # A. Generate Hormokine
-        candidate = ai_engine.generate_hormokine(
+        # A. Generate Hormokine (Now returns an Object, not a dict)
+        candidate_obj = ai_engine.generate_hormokine(
             target_receptor="TGFBR2", 
             effect="INHIBIT"
         )
-        print(f"   Candidate Generated: {candidate['sequence'][:10]}... (ID: {candidate['sequence_id']})")
+        # Access attributes with dot notation (.) instead of brackets ['']
+        print(f"   Candidate Generated: {candidate_obj.sequence[:10]}... (ID: {candidate_obj.intervention_id})")
 
-        # B. Simulate Injection into Twin
-        outcome = patient_twin.inject_treatment(candidate)
+        # B. Simulate Injection (We need to convert back to dict or update liver model)
+        # For simplicity now, let's pass the full object to the updated liver model
+        # NOTE: Using .__dict__ is a quick hack for compatibility with the old liver model
+        # Ideally, we update liver_model.py to accept objects too.
+        outcome = patient_twin.inject_treatment(candidate_obj.__dict__)
         
         # C. Read Results
         print(f"   Clinical Result: Current Fibrosis = {outcome['fibrosis_index']}")
