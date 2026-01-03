@@ -54,7 +54,7 @@ jobs:
 
       - name: Run Unit Tests
         # CAMBIO CLAVE AQUÍ: Usamos 'python -m pytest' en lugar de solo 'pytest'
-        # También agregamos src al PYTHONPATH explícitamente para estar seguros
+        # Asi mismo agregamos src al PYTHONPATH explícitamente para estar seguros
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
           python -m pytest
