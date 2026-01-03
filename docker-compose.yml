@@ -1,30 +1,14 @@
 version: '3.8'
 
 services:
-  # El núcleo de simulación
-  biotwin-core:
-    build: .
-    container_name: biotwin_simulation_v1
-    environment:
-      # Las variables se leerán de tu archivo .env local
-      - NGC_API_KEY=${NGC_API_KEY}
-      - SIMULATION_MODE=hybrid
-    volumes:
-      # Esto permite que si cambiamos código en tu PC, se actualice en el contenedor
-      - ./src:/app/src
-    command: python src/core_orchestrator/main.py
-version: '3.8'
-
-services:
   biotwin-core:
     build: .
     container_name: biotwin_simulation_v1
     ports:
-      - "8501:8501"  # <--- AGREGAR ESTO (Puerto PC : Puerto Docker)
+      - "8501:8501"
     environment:
       - NGC_API_KEY=${NGC_API_KEY}
       - SIMULATION_MODE=hybrid
     volumes:
       - ./src:/app/src
-    # CAMBIAR EL COMANDO para lanzar Streamlit en lugar de main.py directo
     command: streamlit run src/dashboard/app.py --server.address=0.0.0.0
