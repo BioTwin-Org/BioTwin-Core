@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  # El núcleo de simulación
+  biotwin-core:
+    build: .
+    container_name: biotwin_simulation_v1
+    environment:
+      # Las variables se leerán de tu archivo .env local
+      - NGC_API_KEY=${NGC_API_KEY}
+      - SIMULATION_MODE=hybrid
+    volumes:
+      # Esto permite que si cambiamos código en tu PC, se actualice en el contenedor
+      - ./src:/app/src
+    command: python src/core_orchestrator/main.py
