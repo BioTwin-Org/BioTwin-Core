@@ -202,4 +202,9 @@ Based on the conceptual framework: *"The Body as a Programmable Analog Computer"
 
 ---
 
+
 **License:** Apache 2.0
+## Restart Container (Windows)
+
+
+docker-compose up --build
