@@ -43,6 +43,18 @@ jobs:
           pip install pytest
           # Aquí instalarías tus requerimientos reales
           # pip install -r requirements.txt
+      
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          # Instalamos las dependencias reales del proyecto
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
       - name: Run Unit Tests
-        # Esto buscará y ejecutará tus tests en la carpeta /tests
-        run: pytest
+        # CAMBIO CLAVE AQUÍ: Usamos 'python -m pytest' en lugar de solo 'pytest'
+        # También agregamos src al PYTHONPATH explícitamente para estar seguros
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          python -m pytest
