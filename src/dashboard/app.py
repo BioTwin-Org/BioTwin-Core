@@ -92,7 +92,23 @@ with col1:
                 m4.metric("Viability", f"{status['hepatocyte_viability']:.2f}")
                 m5.metric("Safety", f"{(1 - c.immunogenicity_score)*100:.0f}%")
             time.sleep(0.05)
+# --- NUEVA LÓGICA DE REPORTE ---
+        st.success("Simulation Sequence Complete")
+        
+        # Generar CSV a partir de la historia
+        csv_data = df.to_csv(index=False).encode('utf-8')
+        
+        st.download_button(
+            label="📊 Download Clinical Simulation Report (CSV)",
+            data=csv_data,
+            file_name=f"BioTwin_Report_{c.intervention_id}.csv",
+            mime="text/csv",
+            help="Click to download the full time-series data of this experiment."
+        )
 
+        # Mostrar tabla de datos opcional
+        with st.expander("View Raw Data Table"):
+            st.dataframe(df)
 with col2:
     st.header("Analytics")
     st.info("Monitor how the instruction domain affects the epigenetic driver.")
