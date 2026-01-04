@@ -51,3 +51,28 @@ class BioNeMoClient:
             predicted_affinity=affinity,
             molecule_type="protein"
         )
+# Update in src/generative/bionemo_client.py
+
+    def _mock_generation(self, target_receptor, effect) -> Hormokine:
+        time.sleep(1)
+        amino_acids = "ACDEFGHIKLMNPQRSTVWY"
+        sequence = "".join(random.choices(amino_acids, k=25))
+        affinity = random.uniform(0.7, 0.99)
+        
+        # NEW: Simulate Immunogenicity Score (0.0 to 1.0)
+        # High scores mean the immune system will likely attack the molecule
+        immuno_score = random.uniform(0.1, 0.5) 
+
+        target_profile = TargetProfile(
+            cell_type="hepatocyte",
+            receptor=target_receptor,
+            action=effect
+        )
+
+        return Hormokine(
+            sequence=sequence,
+            target=target_profile,
+            predicted_affinity=affinity,
+            immunogenicity_score=immuno_score, # Added to schema
+            instruction_potency=0.8
+        )
