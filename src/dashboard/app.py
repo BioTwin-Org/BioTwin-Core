@@ -4,126 +4,127 @@ import time
 import sys
 import os
 
-# Asegurar que Streamlit encuentre los módulos del proyecto
+# Ensure Streamlit can find the project modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
 from src.generative.bionemo_client import BioNeMoClient
 from src.model_containers.agent_based.liver_model import LiverLobule
-from src.data_models.schemas import Hormokine, TargetProfile
+from src.data_models.schemas import Hormokine
 
-# Configuración de la página
+# Page Configuration
 st.set_page_config(
-    page_title="BioTwin Core | Dashboard",
+    page_title="BioTwin Core | Research Dashboard",
     page_icon="🧬",
     layout="wide"
 )
 
-# Título y Descripción
-st.title("🧬 BioTwin Core: Reprogramación Endocrina")
+# Title and Header
+st.title("🧬 BioTwin Core: Endogenous Reprogramming")
 st.markdown("""
-**Panel de Control de Gemelo Digital.** Diseñe una Hormokina, inyéctela en el tejido virtual y observe la respuesta fisiológica en tiempo real.
-*Basado en la arquitectura: El cuerpo como computadora analógica programable.*
+**Digital Twin Control Panel.** Design a custom Hormokine, simulate its injection into virtual tissue, 
+and monitor the epigenetic response and fibrosis reversal in real-time.
 """)
 
-# --- BARRA LATERAL: DISEÑO DE HORMOKINA (IA) ---
-st.sidebar.header("1. Diseño Generativo (BioNeMo)")
+# --- SIDEBAR: HORMOKINE DESIGN (AI ENGINE) ---
+st.sidebar.header("1. Generative Design (BioNeMo)")
 
 target_receptor = st.sidebar.selectbox(
-    "Receptor Objetivo",
+    "Target Receptor",
     ["TGFBR2 (Fibrosis Driver)", "EGFR (Regeneration)", "DOPAMINE_R (Off-target)"]
 )
 
 action_type = st.sidebar.selectbox(
-    "Acción Farmacológica",
+    "Pharmacological Action",
     ["INHIBIT", "ACTIVATE"]
 )
 
-st.sidebar.markdown("---")
-st.sidebar.info("El modelo de IA generará una secuencia de proteína optimizada para estos parámetros.")
+# Strip description for the logic
+clean_receptor = target_receptor.split(" ")[0]
 
-if st.sidebar.button("Generar Candidato"):
-    with st.spinner("Conectando con BioNeMo Model (Sim)..."):
-        # Instanciar cliente IA
+if st.sidebar.button("Generate Candidate"):
+    with st.spinner("Connecting to BioNeMo Service..."):
         ai_client = BioNeMoClient()
-        candidate = ai_client.generate_hormokine(target_receptor, action_type)
-        
-        # Guardar en sesión para usarlo después
+        # The client now returns a structured Hormokine object
+        candidate = ai_client.generate_hormokine(clean_receptor, action_type)
         st.session_state['candidate'] = candidate
-        st.success("¡Hormokina Diseñada!")
+        st.success("Hormokine Designed!")
 
-# Mostrar candidato si existe
+# Display current candidate details
 if 'candidate' in st.session_state:
     c = st.session_state['candidate']
-    st.sidebar.markdown("### Candidato Actual")
-    st.sidebar.code(f"ID: {c.intervention_id}\nSeq: {c.sequence[:10]}...")
-    st.sidebar.metric("Afinidad Predicha", f"{c.predicted_affinity:.2f}")
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### Active Molecule")
+    st.sidebar.code(f"ID: {c.intervention_id}\nSequence: {c.sequence[:12]}...")
+    st.sidebar.metric("Predicted Affinity", f"{c.predicted_affinity:.3f}")
+    st.sidebar.metric("Instruction Potency", f"{c.instruction_potency:.2f}")
 
-# --- PANEL PRINCIPAL: SIMULACIÓN (GEMELO DIGITAL) ---
-col1, col2 = st.columns([2, 1])
+# --- MAIN PANEL: SIMULATION (DIGITAL TWIN) ---
+col1, col2 = st.columns([3, 1])
 
 with col1:
-    st.header("2. Simulación Fisiológica (LiverVerse)")
+    st.header("2. Physiological Simulation (LiverVerse)")
     
-    # Botón para iniciar simulación
-    start_sim = st.button("💉 Inyectar Tratamiento e Iniciar Simulación", type="primary")
+    start_sim = st.button("💉 Inject Treatment & Start Simulation", type="primary")
     
-    # Contenedor para el gráfico en tiempo real
     chart_placeholder = st.empty()
     stats_placeholder = st.empty()
 
     if start_sim and 'candidate' in st.session_state:
-        # Inicializar Gemelo con Fibrosis Alta
+        # Initialize Twin with severe fibrosis
         liver = LiverLobule(fibrosis_level=0.90)
         candidate = st.session_state['candidate']
         
-        # Historial para graficar
         history = []
-        
-        # Bucle de simulación temporal (simulamos 20 pasos de tiempo)
         progress_bar = st.progress(0)
         
-        for step in range(20):
-            # En el paso 5 inyectamos el tratamiento
+        # Simulation Loop (30 Time Steps)
+        for step in range(30):
+            # Injection occurs at step 5
             if step == 5:
-                st.toast(f"Inyectando {candidate.intervention_id}...", icon="💉")
+                st.toast(f"Injecting {candidate.intervention_id}...", icon="💉")
                 liver.inject_treatment(candidate)
             else:
-                liver.update_state() # Evolución natural
+                liver.update_state()
             
-            # Recopilar datos
             status = liver.get_status()
             history.append(status)
             
-            # Actualizar gráfico dinámico
+            # Update Dynamic Chart
             df = pd.DataFrame(history)
+            # Reorganizing for better visualization
+            chart_data = df.set_index('step')[['fibrosis_index', 'epigenetic_status', 'hepatocyte_viability']]
             
-            # Crear gráfico de líneas
-            chart_placeholder.line_chart(
-                df[['fibrosis_index', 'hepatocyte_viability']],
-                height=350
-            )
+            chart_placeholder.line_chart(chart_data, height=400)
             
-            # Actualizar métricas
+            # Update Metrics
             with stats_placeholder.container():
-                m1, m2, m3 = st.columns(3)
-                m1.metric("Paso Temporal", f"{status['step']}")
-                m2.metric("Índice Fibrosis", f"{status['fibrosis_index']:.2f}", delta_color="inverse")
-                m3.metric("Viabilidad Celular", f"{status['hepatocyte_viability']:.2f}")
+                m1, m2, m3, m4 = st.columns(4)
+                m1.metric("Step", f"{status['step']}")
+                m2.metric("Fibrosis Index", f"{status['fibrosis_index']:.2f}", delta_color="inverse")
+                m3.metric("Epigenetic Driver", f"{status['epigenetic_status']:.2f}")
+                m4.metric("Cell Viability", f"{status['hepatocyte_viability']:.2f}")
 
-            time.sleep(0.1) # Velocidad de animación
-            progress_bar.progress((step + 1) / 20)
+            time.sleep(0.1)
+            progress_bar.progress((step + 1) / 30)
             
-        st.success("Simulación Finalizada")
+        st.success("Simulation Sequence Complete")
 
-    elif start_sim and 'candidate' not in st.session_state:
-        st.error("Primero genere una Hormokina en el panel lateral.")
+    elif start_sim:
+        st.warning("Please generate a Hormokine in the sidebar first.")
 
 with col2:
-    st.header("Diagnóstico")
+    st.header("Analytics")
     st.info("""
-    **Interpretación:**
-    * **Línea Azul (Fibrosis):** Debe bajar tras la inyección (Paso 5) si el tratamiento es correcto.
-    * **Línea Roja (Viabilidad):** Debe subir a medida que el tejido sana.
+    **Legend:**
+    * **Fibrosis Index (Blue):** Physical scarring of the tissue.
+    * **Epigenetic Status (Orange):** Gene expression driver (Target for Reprogramming).
+    * **Cell Viability (Green):** Overall hepatocyte health.
     """)
-    with st.expander("Ver Logs del Sistema"):
-        st.write("Esperando ejecución...")
+    
+    with st.expander("Biological Logic Logs"):
+        if 'candidate' in st.session_state:
+            st.write(f"Targeting Receptor: {clean_receptor}")
+            st.write(f"Action: {action_type}")
+            st.write("Smart Release: Active (MMP-9 Sensor)")
+        else:
+            st.write("Waiting for data...")
