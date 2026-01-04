@@ -58,6 +58,28 @@ if 'candidate' in st.session_state:
     st.sidebar.metric("Predicted Affinity", f"{c.predicted_affinity:.3f}")
     st.sidebar.metric("Instruction Potency", f"{c.instruction_potency:.2f}")
 
+if 'candidate' in st.session_state:
+    c = st.session_state['candidate']
+    # Lógica del Semáforo de Seguridad
+    if c.immunogenicity_score < 0.25:
+        st.sidebar.success("✅ Safety Score: HIGH")
+    elif c.immunogenicity_score < 0.45:
+        st.sidebar.warning("⚠️ Safety Score: MEDIUM")
+    else:
+        st.sidebar.error("🚨 Safety Score: LOW (Toxic)")
+    
+    st.sidebar.progress(1.0 - c.immunogenicity_score) # Barra de salud de la molécula
+
+# --- En el Panel de Métricas de Simulación (métrica m5) ---
+with stats_placeholder.container():
+    m1, m2, m3, m4, m5 = st.columns(5) # Añadimos una 5ta columna
+    m1.metric("Step", f"{status['step']}")
+    m2.metric("Fibrosis", f"{status['fibrosis_index']:.2f}", delta_color="inverse")
+    m3.metric("Epigenetic", f"{status['epigenetic_status']:.2f}")
+    m4.metric("Viability", f"{status['hepatocyte_viability']:.2f}")
+    # Nueva métrica de Inmunogenicidad (Inversa para que 'positivo' sea bueno)
+    m5.metric("Safety", f"{(1 - c.immunogenicity_score)*100:.0f}%")
+    
 # --- MAIN PANEL: SIMULATION (DIGITAL TWIN) ---
 col1, col2 = st.columns([3, 1])
 
