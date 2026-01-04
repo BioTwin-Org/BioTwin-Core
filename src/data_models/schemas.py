@@ -1,3 +1,11 @@
+@dataclass
+class Hormokine:
+    sequence: str
+    target: TargetProfile
+    molecule_type: str = "protein"
+    intervention_id: str = field(default_factory=lambda: f"HK-{uuid.uuid4().hex[:8].upper()}")
+    # Nueva propiedad: Capacidad de la molécula para penetrar y reprogramar
+    instruction_potency: float = 0.5  # 0.0 a 1.0
 from dataclasses import dataclass, field
 from typing import List, Optional
 import json
