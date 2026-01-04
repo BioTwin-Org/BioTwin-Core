@@ -71,6 +71,11 @@ class LiverLobule:
         
         self.update_state()
         return self.get_status()
+        # 5. TOXICITY CHECK (Off-target damage)
+        if intervention.immunogenicity_score > 0.4:
+            toxicity_damage = intervention.immunogenicity_score * 0.2
+            self.hepatocytes_health -= toxicity_damage
+            print(f"   -> ⚠️ TOXICITY ALERT: Immune reaction detected! Damage: -{toxicity_damage:.2f}")
 
     def update_state(self):
         """
@@ -104,3 +109,4 @@ class LiverLobule:
             "epigenetic_status": round(self.epigenetic_fibrosis_driver, 4),
             "hepatocyte_viability": round(self.hepatocytes_health, 4)
         }
+
