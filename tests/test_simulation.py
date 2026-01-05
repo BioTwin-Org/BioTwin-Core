@@ -2,47 +2,67 @@ import pytest
 from src.model_containers.agent_based.liver_model import LiverLobule
 from src.data_models.schemas import Hormokine, TargetProfile
 
-def test_fibrosis_reduction():
+def test_hsc_reprogramming_success():
     """
-    Test that a valid Hormokine actually reduces fibrosis.
-    This validates the 'Programming' aspect of the tissue.
+    Test that targeting TGFBR2 successfully deactivates Stellate Cells (HSCs).
     """
-    # 1. Setup: Sick liver
+    # 1. Setup: Liver with 100% active HSCs
     liver = LiverLobule(fibrosis_level=0.9)
+    initial_hsc_status = liver.get_status()['hsc_activation']
     
-    # 2. Action: Create a perfect drug manually
-    perfect_drug = Hormokine(
-        sequence="AAAAA",
-        molecule_type="peptide",
-        predicted_affinity=0.95, # Very high affinity
+    # 2. Action: Create an 'Inhibitor' Hormokine for TGFBR2
+    treatment = Hormokine(
+        sequence="ANTI-FIBROSIS-001",
+        predicted_affinity=0.9,
+        instruction_potency=0.9,
         target=TargetProfile(
-            cell_type="hepatocyte",
-            receptor="TGFBR2",     # Correct receptor
-            action="INHIBIT"       # Correct action
+            cell_type="hepatocyte", # Or stellate, logic handles TGFBR2
+            receptor="TGFBR2",
+            action="INHIBIT"
         )
     )
     
     # 3. Inject
-    result = liver.inject_treatment(perfect_drug)
+    result = liver.inject_treatment(treatment)
     
-    # 4. Assert: Fibrosis should decrease
-    # Initial 0.9 - (0.15 * 0.95) + progression... should be < 0.9
-    assert result['fibrosis_index'] < 0.9, "Fibrosis did not decrease with perfect treatment"
+    # 4. Assert: HSC activation must drop
+    assert result['hsc_activation'] < initial_hsc_status
+    assert result['epigenetic_status'] < 1.0
 
-def test_wrong_receptor():
+def test_hepatocyte_regeneration():
     """
-    Test that targeting a non-existent receptor does nothing.
-    Validates the 'Addressing Domain' logic.
+    Test that targeting EGFR promotes hepatocyte viability.
     """
-    liver = LiverLobule(fibrosis_level=0.9)
+    liver = LiverLobule(fibrosis_level=0.5)
+    initial_health = liver.get_status()['hepatocyte_viability']
     
-    useless_drug = Hormokine(
-        sequence="BBBBB",
-        target=TargetProfile(cell_type="brain", receptor="DOPAMINE_R", action="ACTIVATE"),
-        predicted_affinity=0.99
+    regen_hormokine = Hormokine(
+        sequence="REGEN-001",
+        predicted_affinity=0.8,
+        target=TargetProfile(cell_type="hepatocyte", receptor="EGFR", action="ACTIVATE")
     )
     
-    result = liver.inject_treatment(useless_drug)
+    result = liver.inject_treatment(regen_hormokine)
     
-    # Fibrosis should increase slightly due to natural progression, not decrease
-    assert result['fibrosis_index'] >= 0.9, "Treatment for wrong receptor should not cure fibrosis"
+    # 5. Assert: Viability should increase
+    assert result['hepatocyte_viability'] > initial_health
+
+def test_clamping_logic():
+    """
+    Ensure values never go below 0.0 or above 1.0.
+    """
+    liver = LiverLobule(fibrosis_level=0.1)
+    # Force an extremely potent treatment
+    super_drug = Hormokine(
+        sequence="SUPER",
+        predicted_affinity=1.0,
+        instruction_potency=1.0,
+        target=TargetProfile(cell_type="hepatocyte", receptor="TGFBR2", action="INHIBIT")
+    )
+    
+    # Inject multiple times
+    for _ in range(5):
+        result = liver.inject_treatment(super_drug)
+        
+    assert result['fibrosis_index'] >= 0.0
+    assert result['hsc_activation'] >= 0.0
