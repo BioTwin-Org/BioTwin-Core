@@ -90,7 +90,7 @@ with col1:
                 m2.metric("Fibrosis", f"{status['fibrosis_index']:.2f}")
                 m3.metric("Epigenetic", f"{status['epigenetic_status']:.2f}")
                 m4.metric("Viability", f"{status['hepatocyte_viability']:.2f}")
-                m5.metric("Safety", f"{(1 - c.immunogenicity_score)*100:.0f}%")
+                
             time.sleep(0.05)
 # --- NUEVA LÓGICA DE REPORTE ---
         st.success("Simulation Sequence Complete")
