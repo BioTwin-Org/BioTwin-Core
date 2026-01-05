@@ -1,75 +1,59 @@
-# Contributing to BioTwin-Core
+# Contributing to BioTwin Core 🧬
 
-Thank you for your interest in contributing to the **BioTwin-Core** project! We are building the first open-source Digital Twin engine for endogenous regenerative medicine.
+First off, thank you for considering contributing to BioTwin! It's people like you who will help us turn the vision of "programmable medicine" into a reality.
 
-To ensure a smooth collaboration, please review the following guidelines.
-
-## 🤝 How to Contribute
-
-We welcome contributions from:
-* **Biologists:** Validating mechanistic rules and providing data parameters.
-* **AI Engineers:** Improving BioNeMo integration and generative models.
-* **Developers:** Optimizing the simulation engine and Docker architecture.
-
-### 1. The Workflow
-We follow a standard **Fork & Pull Request** workflow:
-
-1.  **Fork** the repository on GitHub.
-2.  **Clone** your fork locally:
-    ```bash
-    git clone [https://github.com/BioTwin-Org/BioTwin-Core.git](https://github.com/BioTwin-Org/BioTwin-Core.git)
-    ```
-3.  **Create a Branch** for your feature or fix:
-    ```bash
-    git checkout -b feature/amazing-new-cell-type
-    ```
-4.  **Make your changes**. Ensure you follow the coding standards below.
-5.  **Test your changes**:
-    ```bash
-    # Run the test suite
-    pytest
-    ```
-6.  **Commit and Push**:
-    ```bash
-    git commit -m "feat: add stellate cell activation logic"
-    git push origin feature/amazing-new-cell-type
-    ```
-7.  **Open a Pull Request (PR)** against the `main` branch of the original repository.
+By contributing, you are helping build a framework that bridges the gap between Generative AI and Digital Twin technology.
 
 ---
 
-## 💻 Development Environment
+## 🛠 How Can You Contribute?
 
-### Requirements
-* **Docker Desktop** (essential for running the full stack).
-* **Python 3.9+** (if running locally without Docker).
-* **NVIDIA GPU** (Optional, but recommended for BioNeMo training tasks).
+### 1. 🧬 Biological Logic (New Organs & Receptors)
+BioTwin is currently focused on the liver, but the architecture is organ-agnostic. You can contribute by:
+* Defining new `TargetProfiles` for different diseases (e.g., Cardiac Fibrosis, Neurodegeneration).
+* Researching and adding new receptors to the `liver_model.py` or creating new organ models.
+* Improving the **Epigenetic Driver** logic based on real-world clinical data.
 
-### Setting up (Windows/Linux/Mac)
-We provide a `docker-compose` setup to guarantee reproducibility.
+### 2. 🤖 AI & Generative Improvements
+The `BioNeMoClient` currently uses a mock for simulation. We need help:
+* Integrating real API calls to **NVIDIA BioNeMo**, **AlphaFold**, or **ESMFold**.
+* Developing better scoring functions for `immunogenicity` and `toxicity` of protein sequences.
 
-1.  Copy the example env file:
-    * *Windows (PowerShell):* `Copy-Item .env.example .env`
-    * *Linux/Mac:* `cp .env.example .env`
-2.  Build the stack:
-    ```bash
-    docker-compose up --build
-    ```
+### 3. 💻 Software Engineering
+* **Optimization:** Improving the performance of the Agent-Based Model (ABM).
+* **Visualization:** Enhancing the Streamlit Dashboard or building a 3D cellular viewer using Three.js or PyVista.
+* **Testing:** Writing edge-case tests for the simulation bounds in `tests/`.
 
 ---
 
-## 🎨 Coding Standards
+## 🚀 Development Workflow
 
-* **Language:** Python 3.9+.
-* **Style:** We follow [PEP 8](https://peps.python.org/pep-0008/).
-* **Docstrings:** All classes and functions must have docstrings explaining inputs, outputs, and biological context.
+### 1. Setup the Environment
+Follow the instructions in the [README.md](README.md) to get the Docker container running.
 
-```python
-def secrete_cytokine(concentration: float):
-    """
-    Simulates the release of inflammatory cytokines.
-    
-    Args:
-        concentration (float): The molar concentration (nM).
-    """
-    pass
+### 2. Coding Standards (The CI Pipeline)
+We use **Flake8** for linting and **Pytest** for logic validation. Your code must pass the CI pipeline to be merged.
+* Run linter: `flake8 src/`
+* Run tests: `python -m pytest tests/`
+
+### 3. Branching Strategy
+* Please create a branch for your feature: `git checkout -b feature/amazing-new-receptor`.
+* Open a **Pull Request (PR)** against the `main` branch.
+* Describe your changes: What biological logic did you add? How does it affect the Digital Twin?
+
+---
+
+## 🧪 Scientific Integrity
+BioTwin Core aims for rational design. When proposing changes to the simulation logic:
+* Cite your sources (e.g., papers on TGF-beta signaling or HSC activation).
+* Ensure that the "Programming" metaphor remains consistent: Molecules are instructions, Receptors are ports, and Cells are the hardware.
+
+
+
+---
+
+## 📫 Communication
+* **Issues:** For bug reports or feature requests.
+* **Discussions:** For "What if we simulated..." type of ideas.
+
+Join us in building the operating system for the human body!
