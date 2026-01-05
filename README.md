@@ -1,4 +1,3 @@
-
 # 🧬 BioTwin Core: Endogenous Reprogramming Framework
 
 **"The human body is an analog computer that can be programmed via molecular instructions."**
@@ -39,3 +38,42 @@ BioTwin-Core/
 ├── tests/                # Automated logic validation
 ├── docker-compose.yml    # Containerized environment
 └── README.md             # Project documentation
+🚀 Getting Started (Example Usage)
+1. Run the Environment
+Ensure you have Docker installed, then run:
+
+Bash
+
+docker-compose up --build
+Access the dashboard at http://localhost:8501.
+
+2. Design a Treatment
+In the sidebar, select a target. For example, to treat Liver Fibrosis:
+
+Target: TGFBR2 (Transforming Growth Factor Beta Receptor 2).
+
+Action: INHIBIT.
+
+AI Engine: Generates a sequence with optimized Binding Affinity and Safety Score.
+
+3. Run the Digital Twin
+Inject the Hormokine and observe the real-time graph. You will see:
+
+HSC Activation drop (Epigenetic silencing).
+
+Fibrosis Index decrease (Tissue repair).
+
+Cell Health stabilize or increase (Regeneration).
+
+🤝 Contributing
+We are building the future of programmable medicine. We welcome:
+
+Bioinformaticians: To refine the protein-receptor affinity models.
+
+Software Engineers: To scale the simulation to 3D voxel-based models.
+
+Medical Researchers: To define new TargetProfiles for different organs.
+
+Check our CONTRIBUTING.md (coming soon) for more details.
+
+Disclaimer: BioTwin Core is a research-oriented simulation framework. It is not intended for clinical use or direct medical application.
