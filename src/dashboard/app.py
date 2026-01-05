@@ -109,7 +109,33 @@ with col1:
                 m4.metric("Cell Health", f"{status['hepatocyte_viability']:.2f}")
             
             time.sleep(0.05)
-
+# --- NUEVA SECCIÓN: HORMOKINE IDENTITY CARD ---
+        st.markdown("---")
+        st.subheader("🪪 Hormokine Identity Card")
+        
+        card_col1, card_col2 = st.columns([1, 2])
+        
+        with card_col1:
+            # Un diseño visual tipo "badge"
+            st.markdown(f"""
+            <div style="border: 2px solid #30363d; border-radius: 15px; padding: 20px; background-color: #161b22; text-align: center;">
+                <h2 style="color: #58a6ff;">{c.intervention_id}</h2>
+                <p style="font-family: monospace; font-size: 10px; color: #8b949e;">{c.sequence[:20]}...</p>
+                <hr style="border: 0.5px solid #30363d;">
+                <div style="font-size: 24px;">🧬</div>
+                <p style="margin: 0;"><b>Affinity:</b> {c.predicted_affinity:.2%}</p>
+                <p style="margin: 0;"><b>Safety:</b> {(1-c.immunogenicity_score):.2%}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        with card_col2:
+            st.markdown(f"""
+            **Target Receptor:** `{c.target.receptor}`  
+            **Programmed Action:** `{c.target.action}`  
+            **Instruction Potency:** `{c.instruction_potency}`  
+            **Status:** `Verified for Digital Twin Simulation`
+            """)
+            st.info("This identity card represents a unique molecular instruction set designed by BioTwin AI.")
         # Post-Simulation Report
         st.success("Experiment Complete.")
         csv_data = df.to_csv(index=False).encode('utf-8')
