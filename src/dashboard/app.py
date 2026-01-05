@@ -82,14 +82,17 @@ with col1:
             history.append(status)
             
             df = pd.DataFrame(history)
-            chart_placeholder.line_chart(df.set_index('step')[['fibrosis_index', 'epigenetic_status', 'hepatocyte_viability']])
+            chart_placeholder.line_chart(
+    df.set_index('step')[['fibrosis_index', 'hsc_activation', 'hepatocyte_viability']],
+    height=400
+)
             
             with stats_placeholder.container():
-                m1, m2, m3, m4, m5 = st.columns(5)
-                m1.metric("Step", f"{status['step']}")
-                m2.metric("Fibrosis", f"{status['fibrosis_index']:.2f}")
-                m3.metric("Epigenetic", f"{status['epigenetic_status']:.2f}")
-                m4.metric("Viability", f"{status['hepatocyte_viability']:.2f}")
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Step", f"{status['step']}")
+    m2.metric("Fibrosis", f"{status['fibrosis_index']:.2f}")
+    m3.metric("HSC Activation", f"{status['hsc_activation']:.2f}", delta="-Inhibition")
+    m4.metric("Cell Health", f"{status['hepatocyte_viability']:.2f}")
                 m5.metric("Safety", f"{(1 - c.immunogenicity_score)*100:.0f}%")
             time.sleep(0.05)
 # --- NUEVA LÓGICA DE REPORTE ---
