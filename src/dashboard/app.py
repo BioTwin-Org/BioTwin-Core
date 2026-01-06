@@ -130,21 +130,36 @@ with col1:
             
         with card_col2:
             st.markdown(f"""
-            **Target Receptor:** `{c.target.receptor}`  
+            ### Target Specifications
+            **Receptor:** `{c.target.receptor}`  
             **Programmed Action:** `{c.target.action}`  
-            **Instruction Potency:** `{c.instruction_potency}`  
             **Status:** `Verified for Digital Twin Simulation`
             """)
-            st.info("This identity card represents a unique molecular instruction set designed by BioTwin AI.")
-        # Post-Simulation Report
-        st.success("Experiment Complete.")
+            
+            # --- NUEVO: Botón de Copiado de Secuencia ---
+            st.text_input("Protein Sequence (Copy for Analysis):", value=c.sequence, key="seq_copy_tool")
+            st.progress(c.instruction_potency)
+            st.caption(f"Instruction Potency: {c.instruction_potency*100:.1f}%")
+
+        # --- REPORTE POST-SIMULACIÓN ---
+        # Este bloque se ejecuta cuando el loop de simulación termina
+        st.success("✅ Experiment Complete.")
+        
+        # Generación del CSV
         csv_data = df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📊 Download Clinical Report (CSV)",
-            data=csv_data,
-            file_name=f"BioTwin_Report_{c.intervention_id}.csv",
-            mime="text/csv"
-        )
+        
+        # Columnas para organizar los botones finales
+        done_col1, done_col2 = st.columns(2)
+        with done_col1:
+            st.download_button(
+                label="📊 Download Clinical Report (CSV)",
+                data=csv_data,
+                file_name=f"BioTwin_Report_{c.intervention_id}.csv",
+                mime="text/csv",
+                help="Download raw simulation data for statistical analysis."
+            )
+        with done_col2:
+            st.info("💡 Tip: Use the CSV to validate the model in R or Python.")
 
     elif start_sim:
         st.warning("Please generate a Hormokine in the sidebar before injecting.")
