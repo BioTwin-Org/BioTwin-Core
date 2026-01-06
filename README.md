@@ -65,7 +65,27 @@ HSC Activation drop (Epigenetic silencing).
 Fibrosis Index decrease (Tissue repair).
 
 Cell Health stabilize or increase (Regeneration).
+## 📊 Data Transparency & Validation
 
+BioTwin Core promotes reproducible science. Every simulation generates a clinical-grade CSV report designed for downstream statistical analysis in R, Python (Pandas), or Excel.
+
+### CSV Schema Definitions
+When you download a report (e.g., `BioTwin_Report_HK-XXXX.csv`), you will find the following parameters:
+
+| Column | Unit | Description |
+| :--- | :--- | :--- |
+| `step` | Time-step | Discrete simulation intervals (1 step ≈ arbitrary biological time unit). |
+| `fibrosis_index` | 0.0 - 1.0 | Quantitative measure of Extracellular Matrix (ECM) accumulation. |
+| `hsc_activation` | 0.0 - 1.0 | Phenotypic state of Hepatic Stellate Cells (0=Quiescent, 1=Fully Activated/Myofibroblast). |
+| `hepatocyte_viability` | 0.0 - 1.0 | Ratio of functional liver cells vs. necrotic/apoptotic tissue. |
+
+### How to Validate the Model
+Researchers can verify the "Hormokine" efficiency by calculating the **Inhibition Slope**:
+1. Identify the injection step (default: Step 5).
+2. Measure the delta ($\Delta$) of `hsc_activation` over the subsequent 10 steps.
+3. Compare the recovery rate of `hepatocyte_viability` against the `fibrosis_index` decay.
+
+> **Note:** Our current kinetic model assumes a non-linear relationship where HSC silencing precedes collagen degradation, reflecting the real-world latency of tissue remodeling.
 🤝 Contributing
 We are building the future of programmable medicine. We welcome:
 
@@ -78,4 +98,5 @@ Medical Researchers: To define new TargetProfiles for different organs.
 Check our CONTRIBUTING.md (coming soon) for more details.
 
 Disclaimer: BioTwin Core is a research-oriented simulation framework. It is not intended for clinical use or direct medical application.
+
 
