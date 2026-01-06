@@ -78,7 +78,8 @@ with col1:
     stats_placeholder = st.empty()
 
     if start_sim and 'candidate' in st.session_state:
-        liver = LiverLobule(fibrosis_level=0.90)
+        # Cambia el nivel inicial de fibrosis de 0.90 a 0.60
+liver = LiverLobule(fibrosis_level=0.60)
         c = st.session_state['candidate']
         history = []
         
