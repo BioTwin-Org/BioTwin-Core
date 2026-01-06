@@ -78,7 +78,7 @@ with col1:
     stats_placeholder = st.empty()
 
     if start_sim and 'candidate' in st.session_state:
-        liver = LiverLobule(fibrosis_level=0.90)
+        liver = LiverLobule(fibrosis_level=0.60)
         c = st.session_state['candidate']
         history = []
         
