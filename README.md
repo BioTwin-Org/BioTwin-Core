@@ -17,7 +17,8 @@ Traditional medicine often treats symptoms. BioTwin proposes a shift toward **Ra
 ## 🏗️ System Architecture
 The framework is built on a modular pipeline that ensures scientific rigor and computational efficiency.
 
-
+### 🔬 Scientific Validation
+The biological logic of this simulation is documented in our [Science Folder](./docs/science/MODEL_LOGIC.md). We base our Agent-Based Model on established TGF-β/SMAD signaling pathways and epigenetic silencing research.
 
 ### Core Components:
 * **Generative Layer:** Interfaces with BioNeMo to design sequences based on target receptors (TGFBR2, EGFR).
@@ -77,3 +78,4 @@ Medical Researchers: To define new TargetProfiles for different organs.
 Check our CONTRIBUTING.md (coming soon) for more details.
 
 Disclaimer: BioTwin Core is a research-oriented simulation framework. It is not intended for clinical use or direct medical application.
+
