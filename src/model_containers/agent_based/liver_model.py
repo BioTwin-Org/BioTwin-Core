@@ -31,11 +31,12 @@ class LiverLobule:
     def update_state(self):
         self.steps += 1
         # Si las HSC están activas, la fibrosis sube 0.01
-        if self.hsc_activation_level > 0.3:
-            self.fibrosis_level += 0.01
+        if self.hsc_activation_level < 0.45:
+            self.fibrosis_level -= 0.04
+            self.hsc_activation_level -= 0.01 
         else:
-            # Si están desactivadas, baja 0.01
-            self.fibrosis_level -= 0.025
+            # Si no hay tratamiento efectivo, la fibrosis sigue subiendo
+            self.fibrosis_level += 0.01
         self._clamp_values()
 
     def _clamp_values(self):
@@ -52,6 +53,7 @@ class LiverLobule:
             "hepatocyte_viability": float(round(self.hepatocyte_viability, 4)),
             "epigenetic_status": float(round(self.epigenetic_status, 4))
         }
+
 
 
 
