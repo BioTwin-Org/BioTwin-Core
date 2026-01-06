@@ -19,7 +19,7 @@ class LiverLobule:
             self.hsc_activation_level -= (reprogramming * 0.8) # Más potente
             self.epigenetic_status -= (reprogramming * 0.5)
             # Impacto directo inmediato
-            self.fibrosis_level -= 0.05 
+            self.fibrosis_level -= 0.15 
             
         elif "EGFR" in target and intervention.target.action == "ACTIVATE":
             self.hepatocyte_viability += (affinity * 0.3)
@@ -35,7 +35,7 @@ class LiverLobule:
             self.fibrosis_level += 0.01
         else:
             # Si están desactivadas, baja 0.01
-            self.fibrosis_level -= 0.01
+            self.fibrosis_level -= 0.025
         self._clamp_values()
 
     def _clamp_values(self):
@@ -52,5 +52,6 @@ class LiverLobule:
             "hepatocyte_viability": float(round(self.hepatocyte_viability, 4)),
             "epigenetic_status": float(round(self.epigenetic_status, 4))
         }
+
 
 
