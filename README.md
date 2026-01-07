@@ -7,24 +7,41 @@ BioTwin Core is an open-source framework designed to bridge Generative AI (NVIDI
 ---
 
 ## 👁️ Vision & Philosophy
-Traditional medicine often treats symptoms. BioTwin proposes a shift toward **Rational Biological Programming**. By using synthetic molecules as "software," we can send instructions to specific cell types to:
-1.  **Silence** pathological drivers (e.g., Fibrosis in Stellate Cells).
-2.  **Reactivate** regenerative pathways (e.g., Hepatocyte proliferation).
-3.  **Synchronize** tissue repair using environmental sensors (Smart Release).
+Traditional medicine often treats symptoms. BioTwin proposes a shift toward **Rational Biological Programming**. By using synthetic molecules as "software," we can send instructions to specific cell types to silence pathological drivers and reactivate regenerative pathways.
+
+---
+
+## 🚀 Simulation Showcase: Reversing Liver Fibrosis
+
+Our latest simulation demonstrates the successful reprogramming of the liver microenvironment using the AI-designed candidate **HK-5CE55878**.
+
+### 1. Real-Time Physiological Telemetry
+As shown in the dashboard, we achieved a **total reversal of fibrosis (1.00 -> 0.00)** by precisely inhibiting the activation of Hepatic Stellate Cells (HSCs).
+
+![BioTwin Simulation Overview](BioTwinCore_Sim2_pg1.png)
+
+* **HSC Inhibition:** Activation levels dropped from **0.98 to 0.04** in 40 steps.
+* **Fibrosis Index:** Total matrix degradation achieved, reaching **0.00** at the end of the cycle.
+* **Cell Health:** Hepatocyte viability stabilized at **0.40** during the transition.
+
+### 2. Hormokine Identity Card (Molecular Design)
+Every candidate is generated with a unique identity card that includes its sequence, predicted binding affinity, and safety profile.
+
+![Hormokine Identity Card](BioTwinCore_Sim2_pg2.png)
+
+* **Target:** TGFBR2 (Stellate Cells).
+* **Binding Affinity:** 89.97% (High Potency).
+* **Safety Profile:** Verified for Digital Twin Simulation.
 
 ---
 
 ## 🏗️ System Architecture
-The framework is built on a modular pipeline that ensures scientific rigor and computational efficiency.
+The framework is built on a modular pipeline:
 
-### 🔬 Scientific Validation
-The biological logic of this simulation is documented in our [Science Folder](./docs/science/MODEL_LOGIC.md). We base our Agent-Based Model on established TGF-β/SMAD signaling pathways and epigenetic silencing research.
-
-### Core Components:
-* **Generative Layer:** Interfaces with BioNeMo to design sequences based on target receptors (TGFBR2, EGFR).
-* **Protocol Layer (`schemas.py`):** Standardizes the "Hormokine" object, including its Instruction and Addressing domains.
-* **Simulation Engine (`liver_model.py`):** A Multi-Agent system that simulates the crosstalk between Hepatocytes and Hepatic Stellate Cells (HSCs).
-* **Validation Layer (`pytest`):** Automated CI pipeline to verify biological logic and safety bounds.
+* **Generative Layer:** Designs sequences based on target receptors (TGFBR2, EGFR).
+* **Protocol Layer:** Standardizes the "Hormokine" object (Instruction + Addressing domains).
+* **Simulation Engine:** A Multi-Agent system that simulates crosstalk between Hepatocytes and HSCs.
+* **Validation Layer:** Automated logic validation and safety bounds.
 
 ---
 
@@ -36,67 +53,22 @@ BioTwin-Core/
 │   ├── generative/       # AI Clients (BioNeMo / Mock)
 │   ├── model_containers/ # Digital Twin logic (Liver Lobule)
 │   └── dashboard/        # Streamlit UI
+├── docs/
+│   └── science/          # Biological rationale & references
 ├── tests/                # Automated logic validation
-├── docker-compose.yml    # Containerized environment
-└── README.md             # Project documentation
-🚀 Getting Started (Example Usage)
-1. Run the Environment
-Ensure you have Docker installed, then run:
+└── docker-compose.yml    # Containerized environment
 
-Bash
-
-docker-compose up --build
-Access the dashboard at http://localhost:8501.
-
-2. Design a Treatment
-In the sidebar, select a target. For example, to treat Liver Fibrosis:
-
-Target: TGFBR2 (Transforming Growth Factor Beta Receptor 2).
-
-Action: INHIBIT.
-
-AI Engine: Generates a sequence with optimized Binding Affinity and Safety Score.
-
-3. Run the Digital Twin
-Inject the Hormokine and observe the real-time graph. You will see:
-
-HSC Activation drop (Epigenetic silencing).
-
-Fibrosis Index decrease (Tissue repair).
-
-Cell Health stabilize or increase (Regeneration).
-## 📊 Data Transparency & Validation
-
-BioTwin Core promotes reproducible science. Every simulation generates a clinical-grade CSV report designed for downstream statistical analysis in R, Python (Pandas), or Excel.
-
-### CSV Schema Definitions
-When you download a report (e.g., `BioTwin_Report_HK-XXXX.csv`), you will find the following parameters:
-
-| Column | Unit | Description |
-| :--- | :--- | :--- |
-| `step` | Time-step | Discrete simulation intervals (1 step ≈ arbitrary biological time unit). |
-| `fibrosis_index` | 0.0 - 1.0 | Quantitative measure of Extracellular Matrix (ECM) accumulation. |
-| `hsc_activation` | 0.0 - 1.0 | Phenotypic state of Hepatic Stellate Cells (0=Quiescent, 1=Fully Activated/Myofibroblast). |
-| `hepatocyte_viability` | 0.0 - 1.0 | Ratio of functional liver cells vs. necrotic/apoptotic tissue. |
-
-### How to Validate the Model
-Researchers can verify the "Hormokine" efficiency by calculating the **Inhibition Slope**:
-1. Identify the injection step (default: Step 5).
-2. Measure the delta ($\Delta$) of `hsc_activation` over the subsequent 10 steps.
-3. Compare the recovery rate of `hepatocyte_viability` against the `fibrosis_index` decay.
-
-> **Note:** Our current kinetic model assumes a non-linear relationship where HSC silencing precedes collagen degradation, reflecting the real-world latency of tissue remodeling.
+🧪 Scientific Foundation
+The biological logic is grounded in established TGF-β/SMAD signaling pathways. For a deep dive into the mathematical assumptions and papers used to build this model, please visit our Science Documentation.
 🤝 Contributing
-We are building the future of programmable medicine. We welcome:
+We are building the operating system for the human body. We welcome:
 
-Bioinformaticians: To refine the protein-receptor affinity models.
+Bioinformaticians: To refine protein-receptor affinity models.
 
-Software Engineers: To scale the simulation to 3D voxel-based models.
+Software Engineers: To scale simulations to 3D voxel-based models.
 
 Medical Researchers: To define new TargetProfiles for different organs.
 
-Check our CONTRIBUTING.md (coming soon) for more details.
+Check our CONTRIBUTING.md for more details.
 
 Disclaimer: BioTwin Core is a research-oriented simulation framework. It is not intended for clinical use or direct medical application.
-
-
