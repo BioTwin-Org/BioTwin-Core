@@ -1,8 +1,13 @@
+# src/generative/bionemo_service.py
+import requests
+# Esta importación es la que resuelve el error F821
+from src.data_models.molecule import HormokineStructure 
+
 class BioNeMoService:
-    def fetch_esmfold_structure(self, sequence: str):
-        # En la realidad, aquí haríamos un POST a la API de NVIDIA
-        # Por ahora, devolvemos un PDB genérico de prueba y un score
-        mock_pdb = "HEADER    PROTEIN DATA BANK..." # Contenido PDB real iría aquí
+    def fetch_esmfold_structure(self, sequence: str) -> HormokineStructure:
+        # PDB de ejemplo (IL-6 parcial) para evitar errores de renderizado
+        mock_pdb = "HEADER    PROTEIN DATA BANK    1ALU" 
+        
         return HormokineStructure(
             pdb_content=mock_pdb,
             plddt_score=88.5,
