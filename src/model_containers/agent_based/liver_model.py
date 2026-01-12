@@ -1,59 +1,57 @@
-import random
-from src.data_models.schemas import Hormokine
+import numpy as np
 
-class LiverLobule:
-    def __init__(self, fibrosis_level=0.8):
-        self.fibrosis_level = fibrosis_level
+class KupfferCell:
+    def __init__(self):
+        self.inflammation_output = 0.5
+        self.is_polarized_M1 = True 
+
+    def react(self, health, hsc_act):
+        # Si la salud cae o la activación sube, se inflama más (M1)
+        if health < 0.5 or hsc_act > 0.6:
+            self.is_polarized_M1 = True
+            self.inflammation_output = min(1.0, self.inflammation_output + 0.08)
+        else:
+            self.is_polarized_M1 = False
+            self.inflammation_output = max(0.05, self.inflammation_output - 0.05)
+        return self.inflammation_output
+
+class LiverModel:
+    def __init__(self):
         self.steps = 0
-        self.hepatocyte_viability = 0.4 
-        self.hsc_activation_level = 1.0 
-        self.epigenetic_status = 1.0 
-
-    def inject_treatment(self, intervention: Hormokine) -> dict:
-        affinity = intervention.predicted_affinity
-        target = intervention.target.receptor
-
-        # Aumentamos la potencia de 0.5 a 0.8 para asegurar la victoria en el test
-        if "TGFBR2" in target and intervention.target.action == "INHIBIT":
-            reprogramming = affinity * intervention.instruction_potency
-            self.hsc_activation_level -= (reprogramming * 0.8) # Más potente
-            self.epigenetic_status -= (reprogramming * 0.5)
-            # Impacto directo inmediato
-            self.fibrosis_level -= 0.15 
-            
-        elif "EGFR" in target and intervention.target.action == "ACTIVATE":
-            self.hepatocyte_viability += (affinity * 0.3)
-
-        self._clamp_values()
-        self.update_state() 
-        return self.get_status()
+        self.fibrosis_level = 0.85
+        self.hsc_activation_level = 0.90
+        self.hepatocyte_viability = 0.45
+        self.inflammation_level = 0.80
+        self.kupffer_cells = [KupfferCell() for _ in range(5)]
+        self.history = []
 
     def update_state(self):
         self.steps += 1
-        # Si las HSC están activas, la fibrosis sube 0.01
+        
+        # 1. Las Kupffer reaccionan al microambiente
+        self.inflammation_level = sum([k.react(self.hepatocyte_viability, self.hsc_activation_level) 
+                                      for k in self.kupffer_cells]) / 5
+        
+        # 2. La inflamación impulsa la activación de HSC (Efecto cascada)
+        if self.inflammation_level > 0.4:
+            self.hsc_activation_level = min(1.0, self.hsc_activation_level + 0.02)
+        
+        # 3. Lógica de recuperación (Solo si la activación baja del umbral)
         if self.hsc_activation_level < 0.45:
-            self.fibrosis_level -= 0.04
-            self.hsc_activation_level -= 0.01 
+            self.fibrosis_level = max(0.0, self.fibrosis_level - 0.04)
+            self.hepatocyte_viability = min(1.0, self.hepatocyte_viability + 0.01)
         else:
-            # Si no hay tratamiento efectivo, la fibrosis sigue subiendo
-            self.fibrosis_level += 0.01
-        self._clamp_values()
+            self.fibrosis_level = min(1.0, self.fibrosis_level + 0.01)
 
-    def _clamp_values(self):
-        self.fibrosis_level = max(0.0, min(1.0, self.fibrosis_level))
-        self.hsc_activation_level = max(0.0, min(1.0, self.hsc_activation_level))
-        self.hepatocyte_viability = max(0.0, min(1.0, self.hepatocyte_viability))
-        self.epigenetic_status = max(0.0, min(1.0, self.epigenetic_status))
+        self.history.append({
+            "Step": self.steps,
+            "Fibrosis": self.fibrosis_level,
+            "HSC_Activation": self.hsc_activation_level,
+            "Inflammation": self.inflammation_level,
+            "Health": self.hepatocyte_viability
+        })
 
-    def get_status(self):
-        return {
-            "step": self.steps,
-            "fibrosis_index": float(round(self.fibrosis_level, 4)),
-            "hsc_activation": float(round(self.hsc_activation_level, 4)),
-            "hepatocyte_viability": float(round(self.hepatocyte_viability, 4)),
-            "epigenetic_status": float(round(self.epigenetic_status, 4))
-        }
-
-
-
-
+    def inject_hormokine(self, potency):
+        # La Hormokina ataca directamente la inflamación y la activación
+        self.inflammation_level = max(0.1, self.inflammation_level - (potency * 0.7))
+        self.hsc_activation_level = max(0.05, self.hsc_activation_level - (potency * 0.9))
