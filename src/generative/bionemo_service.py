@@ -6,19 +6,18 @@ from src.data_models.molecule import HormokineStructure
 class BioNeMoService:
     """
     Servicio de enlace con NVIDIA BioNeMo Cloud APIs.
-    Maneja la generación de secuencias y predicción de estructuras 3D.
+    Maneja la generación de secuencias y recuperación de estructuras PDB.
     """
-    
+
     def fetch_esmfold_structure(self, sequence: str) -> HormokineStructure:
         """
-        Predice la estructura 3D usando el modelo ESMFold.
-        Actualmente opera en modo 'Mock' para validación de Dashboard.
+        Simula la predicción de estructura 3D (ESMFold).
+        Devuelve un objeto tipado (HormokineStructure).
         """
-        # HEADER real de un archivo PDB para que el visor no de error
-        mock_pdb = "HEADER    CYTOKINE STRUCTURE    01-JAN-26    1ALU" 
-        
-        # Aquí es donde en el futuro irá el: 
-        # response = requests.post("https://api.nvidia.com/bionemo/esmfold", ...)
+        # En producción, aquí haríamos POST a https://api.nvidia.com/bionemo/esmfold
+        # Usamos un HEADER mínimo para evitar errores de validación, 
+        # aunque este mock no se mostrará visualmente en el dashboard (usaremos el real).
+        mock_pdb = "HEADER    PROTEIN DATA BANK    1ALU" 
         
         return HormokineStructure(
             pdb_content=mock_pdb,
@@ -30,7 +29,8 @@ class BioNeMoService:
     def get_real_cytokine_structure(self, pdb_id="1ALU"):
         """
         Método de utilidad para obtener datos reales del RCSB PDB 
-        para demostraciones técnicas.
+        para demostraciones técnicas visuales (IL-6 real).
+        Devuelve un diccionario compatible con st.session_state del dashboard.
         """
         url = f"https://files.rcsb.org/view/{pdb_id}.pdb"
         try:
@@ -40,7 +40,8 @@ class BioNeMoService:
                     "pdb": response.text,
                     "score": 94.2,
                     "weight": 21.0,
-                    "name": "Interleukin-6 (IL-6)"
+                    "name": "Interleukin-6 (IL-6) [Real Structure]"
                 }
-        except Exception:
+        except Exception as e:
+            print(f"Error fetching PDB: {e}")
             return None
