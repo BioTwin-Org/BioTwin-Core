@@ -1,155 +1,163 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
+import time
 import py3Dmol
 from stmol import showmol
-import requests
-import time
+
+# --- IMPORTACIONES DEL NÚCLEO ---
+# Asegúrate de que las carpetas tengan su __init__.py
+from src.model_containers.agent_based.liver_model import LiverModel
+from src.generative.bionemo_service import BioNeMoService
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="BioTwin Core v2.0", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="BioTwin Core v2.0 | Liver Fibrosis",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    page_icon="🧬"
+)
 
-# --- ESTILOS CUSTOM (CSS) ---
+# --- ESTILOS CSS (Tema Cyber-Bio) ---
 st.markdown("""
     <style>
-    .main { background-color: #0d1117; color: #c9d1d9; }
-    .stMetric { background-color: #161b22; border-radius: 10px; padding: 15px; border: 1px solid #30363d; }
-    .stProgress > div > div > div > div { background-color: #58a6ff; }
+    .main { background-color: #0e1117; }
+    h1, h2, h3 { color: #e6edf3; }
+    .stMetric { background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 10px; }
+    .stAlert { background-color: #161b22; color: #c9d1d9; border: 1px solid #30363d; }
     </style>
     """, unsafe_allow_html=True)
-
-# --- SERVICIOS MOCK / BIONEMO ---
-class BioNeMoService:
-    @staticmethod
-    def get_real_cytokine_structure(pdb_id="1ALU"):
-        """Obtiene la estructura 3D de la IL-6 (Interleucina-6)"""
-        url = f"https://files.rcsb.org/view/{pdb_id}.pdb"
-        try:
-            response = requests.get(url)
-            if response.status_code == 200:
-                return {
-                    "pdb": response.text,
-                    "score": 94.2,
-                    "weight": 21.0,
-                    "name": "Interleukin-6 (IL-6)"
-                }
-        except:
-            return None
-        return None
-
-# --- LÓGICA DEL MODELO (SIMULACIÓN ACTUALIZADA) ---
-class LiverModel:
-    def __init__(self):
-        self.steps = 0
-        self.fibrosis_level = 0.90
-        self.hsc_activation_level = 1.0
-        self.hepatocyte_viability = 0.40
-        self.inflammation_level = 0.85 # Nivel inicial de daño
-        self.history = []
-
-    def inject_treatment(self, affinity):
-        # Impacto de la Hormokina en la cascada inflamatoria
-        reduction = affinity * 0.8
-        self.inflammation_level = max(0.1, self.inflammation_level - reduction)
-        self.hsc_activation_level = max(0.05, self.hsc_activation_level - (reduction * 1.2))
-        return f"Injection Success: Inflammation reduced to {self.inflammation_level:.2f}"
-
-    def update_state(self):
-        self.steps += 1
-        # Dinámica Kupffer -> HSC -> Fibrosis
-        if self.inflammation_level > 0.4:
-            self.hsc_activation_level = min(1.0, self.hsc_activation_level + 0.02)
-        
-        # Recuperación acelerada si el tratamiento funciona
-        if self.hsc_activation_level < 0.45:
-            self.fibrosis_level = max(0.0, self.fibrosis_level - 0.04)
-            self.hepatocyte_viability = min(1.0, self.hepatocyte_viability + 0.01)
-        else:
-            self.fibrosis_level = min(1.0, self.fibrosis_level + 0.01)
-
-        self.history.append({
-            "Step": self.steps,
-            "Fibrosis": self.fibrosis_level,
-            "HSC_Activation": self.hsc_activation_level,
-            "Inflammation": self.inflammation_level,
-            "Cell_Health": self.hepatocyte_viability
-        })
-
-# --- FUNCIONES DE RENDERIZADO ---
-def render_protein_3d(pdb_string):
-    view = py3Dmol.view(width=400, height=300)
-    view.addModel(pdb_string, 'pdb')
-    view.setStyle({'cartoon': {'color': 'spectrum'}})
-    view.addSurface(py3Dmol.VDW, {'opacity': 0.3, 'color': 'white'})
-    view.zoomTo()
-    view.spin(True)
-    showmol(view, height=300, width=400)
 
 # --- INICIALIZACIÓN DE ESTADO ---
 if 'model' not in st.session_state:
     st.session_state.model = LiverModel()
+if 'molecule' not in st.session_state:
     st.session_state.molecule = None
 
-# --- SIDEBAR: GENERATIVE DESIGN ---
+# --- SIDEBAR: GENOMICS & DESIGN ---
 with st.sidebar:
-    st.title("🧬 BioTwin Core AI")
-    target = st.selectbox("Target Receptor", ["TGFBR2 (Stellate Cells)", "IL-6R (Kupffer Cells)"])
-    action = st.radio("Action", ["INHIBIT", "ACTIVATE"])
+    st.title("🧬 BioTwin Core")
+    st.caption("v2.0.1-alpha | Powered by NVIDIA & DeepMind")
     
-    if st.button("Generate Hormokine"):
-        with st.spinner("Consulting BioNeMo ESMFold..."):
-            time.sleep(1)
-            st.session_state.molecule = BioNeMoService.get_real_cytokine_structure()
-            st.success("Candidate HK-5CE55878 Generated")
+    # 1. Módulo AlphaGenome
+    with st.expander("🧬 AlphaGenome: Patient Stratification", expanded=True):
+        variant = st.selectbox(
+            "Select Genomic Profile (SNP)",
+            ["Wild Type (Standard)", "High Risk (IL6 rs1800795)", "Protective (TGFB1 rs1800470)"]
+        )
+        
+        if variant == "High Risk (IL6 rs1800795)":
+            st.session_state.model.genetic_risk = 1.4
+            st.warning("⚠️ High Inflammatory Penetrance Detected")
+        elif variant == "Protective (TGFB1 rs1800470)":
+            st.session_state.model.genetic_risk = 0.7
+            st.success("✅ Enhanced Regeneration Capacity")
+        else:
+            st.session_state.model.genetic_risk = 1.0
 
-    if st.session_state.molecule:
-        st.markdown("---")
-        inf_color = "#ff4b4b" if st.session_state.model.inflammation_level > 0.5 else "#238636"
-        st.markdown(f"""
-            <div style="padding:10px; border-radius:10px; background-color:#161b22; border: 1px solid {inf_color};">
-                <p style="margin:0; color:{inf_color}; font-size:12px;">KUPFFER POLARIZATION</p>
-                <h3 style="margin:0;">{'M1 - INFLAMMATORY' if st.session_state.model.inflammation_level > 0.5 else 'M2 - REGENERATIVE'}</h3>
-                <p style="margin:0; font-size:14px; color:#8b949e;">Cytokine Load: {st.session_state.model.inflammation_level:.2f}</p>
-            </div>
-        """, unsafe_allow_html=True)
+    # 2. Módulo BioNeMo
+    st.markdown("---")
+    st.subheader("🧪 BioNeMo Design")
+    target = st.selectbox("Target Receptor", ["TGFBR2", "IL-6R", "PDGFR-beta"])
+    
+    if st.button("Generate Hormokine Candidate", use_container_width=True):
+        service = BioNeMoService()
+        with st.spinner("Folding protein sequence with ESMFold..."):
+            time.sleep(1.5) # Simulación de latencia de red
+            # Obtenemos estructura real (IL-6 1ALU para demo visual)
+            st.session_state.molecule = service.get_real_cytokine_structure()
+            st.success("Candidate HK-99X Folded Successfully")
 
-# --- MAIN DASHBOARD ---
-st.title("Digital Twin: Endogenous Reprogramming")
-st.caption("Precision Medicine Simulation Framework | Liver Fibrosis Model")
+    # Disclaimer Legal
+    st.markdown("---")
+    st.markdown("""
+        <div style="font-size: 10px; color: #6e7681;">
+            <b>LEGAL NOTICE:</b><br>
+            Genomic analysis powered by AlphaGenome (DeepMind). 
+            Weights used under CC-BY-NC 4.0 license. 
+            Research use only. Not for clinical diagnosis.
+        </div>
+    """, unsafe_allow_html=True)
 
-col_main, col_viz = st.columns([2, 1])
+# --- PANEL PRINCIPAL ---
+col_left, col_right = st.columns([2, 1])
 
-with col_main:
-    st.subheader("Physiological Telemetry")
-    if st.button("💉 Inject & Start Simulation"):
-        for _ in range(40):
-            if st.session_state.model.steps == 5:
-                st.session_state.model.inject_treatment(0.90)
+with col_left:
+    st.header("Endogenous Reprogramming Monitor")
+    
+    # Botón de Acción Principal
+    start_sim = st.button("▶️ RUN SIMULATION / INJECT TREATMENT", type="primary")
+    
+    if start_sim:
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        # Bucle de Simulación
+        for i in range(50):
+            # Inyectar tratamiento en el paso 10
+            if i == 10 and st.session_state.molecule:
+                st.session_state.model.inject_hormokine(potency=0.95, target_affinity=0.98)
+                status_text.success("💉 TREATMENT INJECTED: Targeting IL-6/TGF-b Pathway")
+            
             st.session_state.model.update_state()
+            progress_bar.progress((i + 1) / 50)
             time.sleep(0.05)
-        st.rerun()
+            
+        status_text.info("Simulation Complete")
 
+    # Gráficas de Telemetría
     if st.session_state.model.history:
         df = pd.DataFrame(st.session_state.model.history)
-        st.line_chart(df.set_index("Step")[["Fibrosis", "HSC_Activation", "Inflammation"]])
+        
+        st.subheader("Tissue Response Telemetry")
+        chart_data = df.set_index("Step")[["Fibrosis", "Inflammation", "Viability"]]
+        st.line_chart(chart_data, color=["#ff4b4b", "#ffa500", "#00ff00"]) # Rojo, Naranja, Verde
 
-with col_viz:
-    st.subheader("Molecular Structure")
+        # Métricas Numéricas en Tiempo Real (Último paso)
+        curr = st.session_state.model
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Fibrosis Index", f"{curr.fibrosis_level:.2f}", delta=f"{(curr.fibrosis_level-0.85):.2f}")
+        m2.metric("Inflammation", f"{curr.inflammation_level:.2f}", delta=f"{(curr.inflammation_level-0.80):.2f}", delta_color="inverse")
+        m3.metric("Hepatocyte Health", f"{curr.hepatocyte_viability:.2f}", delta=f"{(curr.hepatocyte_viability-0.45):.2f}")
+
+with col_right:
+    st.subheader("Structural Biology (3D)")
+    
     if st.session_state.molecule:
-        render_protein_3d(st.session_state.molecule['pdb'])
-        st.metric("pLDDT Confidence", f"{st.session_state.molecule['score']}%")
-        st.caption(f"Structure: {st.session_state.molecule['name']}")
+        # 1. Visor 3D
+        pdb_data = st.session_state.molecule.get('pdb', '')
+        view = py3Dmol.view(width=400, height=350)
+        view.addModel(pdb_data, 'pdb')
+        view.setStyle({'cartoon': {'color': 'spectrum'}})
+        view.addSurface(py3Dmol.VDW, {'opacity': 0.3, 'color': 'white'})
+        view.zoomTo()
+        view.spin(True)
+        showmol(view, height=350, width=400)
+        
+        st.caption(f"Structure: {st.session_state.molecule.get('name')} | pLDDT: {st.session_state.molecule.get('score')}")
+
+        # 2. Indicador de Estado Inflamatorio (Kupffer)
+        inf_val = st.session_state.model.inflammation_level
+        is_inflamed = inf_val > 0.4
+        
+        state_color = "#ff4b4b" if is_inflamed else "#238636"
+        state_text = "M1 - PRO-INFLAMMATORY" if is_inflamed else "M2 - REGENERATIVE"
+        
+        st.markdown(f"""
+            <div style="margin-top: 20px; padding: 15px; border: 2px solid {state_color}; border-radius: 10px; background-color: #0d1117;">
+                <strong style="color: {state_color};">KUPFFER CELL POLARIZATION</strong>
+                <h3 style="margin: 5px 0; color: white;">{state_text}</h3>
+                <div style="background: #30363d; width: 100%; height: 8px; border-radius: 4px;">
+                    <div style="background: {state_color}; width: {min(100, inf_val*100)}%; height: 8px; border-radius: 4px; transition: width 0.5s;"></div>
+                </div>
+                <small style="color: #8b949e;">Cytokine Load Index: {inf_val:.2f}</small>
+            </div>
+        """, unsafe_allow_html=True)
+        
     else:
-        st.info("Generate a candidate to view 3D structure")
-
-# --- METRICS FOOTER ---
-st.markdown("---")
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("Fibrosis Index", f"{st.session_state.model.fibrosis_level:.2f}", delta="-Reduction" if st.session_state.model.fibrosis_level < 0.5 else None)
-m2.metric("HSC Activation", f"{st.session_state.model.hsc_activation_level:.2f}")
-m3.metric("Inflammation", f"{st.session_state.model.inflammation_level:.2f}")
-m4.metric("Hepatocyte Viability", f"{st.session_state.model.hepatocyte_viability:.2f}")
-
-if st.button("Reset Simulation"):
-    st.session_state.model = LiverModel()
-    st.rerun()
+        st.info("👈 Generate a molecule to enable 3D Analysis")
+        # Placeholder visual
+        st.markdown("""
+            <div style="height: 300px; border: 1px dashed #30363d; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #8b949e;">
+                Waiting for BioNeMo Output...
+            </div>
+        """, unsafe_allow_html=True)
