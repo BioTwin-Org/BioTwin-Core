@@ -1,3 +1,12 @@
+import sys
+import os
+
+# Agrega la raíz del proyecto al PATH de Python
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
+# Ahora sí, el resto de tus imports
+import streamlit as st
+from src.model_containers.agent_based.liver_model import LiverModel
 import streamlit as st
 import pandas as pd
 import time
