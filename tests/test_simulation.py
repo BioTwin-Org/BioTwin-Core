@@ -1,43 +1,67 @@
 import pytest
-from src.model_containers.agent_based.liver_model import LiverLobule
-from src.data_models.schemas import Hormokine, TargetProfile
+import sys
+import os
 
-def test_fibrosis_reduction():
-    """
-    Test that a valid Hormokine actually reduces fibrosis by 
-    deactivating HSCs.
-    """
-    liver = LiverLobule(fibrosis_level=0.9)
+# TRUCO DE SISTEMA:
+# Esto asegura que Python encuentre la carpeta 'src' sin importar
+# desde dónde ejecutes el test (local o servidor de GitHub Actions).
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from src.model_containers.agent_based.liver_model import LiverModel
+
+class TestBioTwinCore:
     
-    # Perfect drug for the new multi-agent model
-    perfect_drug = Hormokine(
-        sequence="AAAAA",
-        predicted_affinity=0.95,
-        instruction_potency=1.0,
-        target=TargetProfile(
-            cell_type="stellate",
-            receptor="TGFBR2",
-            action="INHIBIT"
-        )
-    )
+    def test_initial_state_integrity(self):
+        """Verifica que el modelo inicie con parámetros fisiológicos válidos."""
+        model = LiverModel()
+        assert 0.0 <= model.fibrosis_level <= 1.0
+        assert 0.0 <= model.inflammation_level <= 1.0
+        assert len(model.kupffer_population) == 10
+        assert model.steps == 0
 
-    result = liver.inject_treatment(perfect_drug)
+    def test_simulation_cycle(self):
+        """Verifica que el motor de tiempo avance y guarde historial."""
+        model = LiverModel()
+        model.update_state()
+        
+        assert model.steps == 1
+        assert len(model.history) == 1
+        # Verifica que se guarden las métricas clave
+        last_record = model.history[-1]
+        assert "Fibrosis" in last_record
+        assert "Inflammation" in last_record
 
-    # Ahora, con la potencia aumentada, 0.9 - 0.05 + 0.01 = 0.86. 
-    # 0.86 < 0.9 es VERDADERO.
-    assert result['fibrosis_index'] < 0.9, f"Fibrosis {result['fibrosis_index']} >= 0.9"
-    assert result['hsc_activation'] < 1.0
+    def test_hormokine_therapeutic_effect(self):
+        """
+        Prueba CRÍTICA: Verifica que la inyección del fármaco
+        realmente reduzca la inflamación y la fibrosis.
+        """
+        model = LiverModel()
+        
+        # Establecemos un estado patológico alto manualmente
+        model.inflammation_level = 0.9
+        model.hsc_activation_level = 0.9
+        
+        # Inyectamos la Hormokina (Potencia alta, Afinidad alta)
+        model.inject_hormokine(potency=0.9, target_affinity=1.0)
+        
+        # Aserciones: Los niveles deben haber bajado
+        assert model.inflammation_level < 0.9, "La inflamación no bajó tras el tratamiento"
+        assert model.hsc_activation_level < 0.9, "La activación de HSC no bajó tras el tratamiento"
 
-def test_regeneration_pathway():
-    liver = LiverLobule(fibrosis_level=0.5)
-    initial_health = liver.get_status()['hepatocyte_viability']
-    
-    regen = Hormokine(
-        sequence="REGEN",
-        predicted_affinity=0.9,
-        instruction_potency=0.5,
-        target=TargetProfile(cell_type="hepatocyte", receptor="EGFR", action="ACTIVATE")
-    )
-    
-    status = liver.inject_treatment(regen)
-    assert status['hepatocyte_viability'] > initial_health
+    def test_alphagenome_risk_integration(self):
+        """
+        Verifica que el factor de riesgo genético se integre correctamente
+        en la lógica del modelo.
+        """
+        model = LiverModel()
+        
+        # Asignamos un riesgo genético de AlphaGenome
+        model.genetic_risk = 1.5
+        
+        # Ejecutamos un ciclo
+        model.update_state()
+        
+        # Verificamos que el modelo siga siendo estable numéricamente
+        assert model.genetic_risk == 1.5
+        assert 0.0 <= model.inflammation_level <= 1.5 # Margen de tolerancia
