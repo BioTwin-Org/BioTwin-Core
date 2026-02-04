@@ -1,26 +1,31 @@
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import List
 
 @dataclass
-class HormokineStructure:
+class GenomicVariant:
     """
-    Representa el resultado físico del plegamiento de proteínas (ESMFold).
-    Contiene los datos binarios del PDB y las métricas de calidad.
+    Representa una mutación puntual (SNP) identificada por AlphaGenome.
     """
-    pdb_content: str       # El string del archivo .pdb para el renderizador
-    plddt_score: float     # Confianza del modelo (0-100)
-    molecular_weight: float # En kiloDaltons (kDa)
-    is_folded: bool = False
+    gene_symbol: str         # Ej: "IL6", "TGFB1"
+    rsid: str                # ID estándar de la variante (ej. rs1800795)
+    description: str         # Descripción clínica (ej. "Promoter region variant")
+    penetrance_factor: float # Multiplicador de impacto en la simulación (1.0 = Neutro)
 
 @dataclass
-class Hormokine:
+class PatientProfile:
     """
-    Entidad principal de dominio.
-    Representa el candidato terapéutico diseñado por la IA Generativa.
+    El perfil genómico del Gemelo Digital.
+    Contiene la lista de variantes activas para un paciente específico.
     """
-    id: str
-    name: str
-    sequence: str          # Secuencia de aminoácidos (String)
-    target_receptor: str   # Ej: TGFBR2, IL-6R
-    structure: Optional[HormokineStructure] = None
-    affinity_score: float = 0.0
+    patient_id: str
+    variants: List[GenomicVariant] = field(default_factory=list)
+
+    def calculate_cumulative_risk(self) -> float:
+        """
+        Calcula el factor de riesgo total combinando todas las variantes.
+        Utilizado por LiverModel para ajustar la agresividad de la inflamación.
+        """
+        risk_multiplier = 1.0
+        for variant in self.variants:
+            risk_multiplier *= variant.penetrance_factor
+        return round(risk_multiplier, 2)
