@@ -1,59 +1,77 @@
+import numpy as np
 import random
-from src.data_models.schemas import Hormokine
 
-class LiverLobule:
-    def __init__(self, fibrosis_level=0.8):
-        self.fibrosis_level = fibrosis_level
+# --- AGENTES ---
+
+class KupfferCell:
+    """
+    Agente Macrófago Residente.
+    """
+    def __init__(self):
+        self.inflammation_output = 0.2
+        self.state = "M2"
+
+    def sense_and_react(self, health_index, genetic_risk):
+        activation_threshold = 0.6 / genetic_risk
+        if health_index < activation_threshold:
+            self.state = "M1"
+            self.inflammation_output = min(1.0, self.inflammation_output + 0.05)
+        else:
+            self.state = "M2"
+            self.inflammation_output = max(0.1, self.inflammation_output - 0.08)
+        return self.inflammation_output
+
+# --- MODELO PRINCIPAL ---
+
+class LiverModel:  # <--- ESTA ES LA CLASE QUE EL TEST BUSCA
+    """
+    Modelo Basado en Agentes del Lobulillo Hepático.
+    """
+    def __init__(self):
         self.steps = 0
-        self.hepatocyte_viability = 0.4 
-        self.hsc_activation_level = 1.0 
-        self.epigenetic_status = 1.0 
-
-    def inject_treatment(self, intervention: Hormokine) -> dict:
-        affinity = intervention.predicted_affinity
-        target = intervention.target.receptor
-
-        # Aumentamos la potencia de 0.5 a 0.8 para asegurar la victoria en el test
-        if "TGFBR2" in target and intervention.target.action == "INHIBIT":
-            reprogramming = affinity * intervention.instruction_potency
-            self.hsc_activation_level -= (reprogramming * 0.8) # Más potente
-            self.epigenetic_status -= (reprogramming * 0.5)
-            # Impacto directo inmediato
-            self.fibrosis_level -= 0.15 
-            
-        elif "EGFR" in target and intervention.target.action == "ACTIVATE":
-            self.hepatocyte_viability += (affinity * 0.3)
-
-        self._clamp_values()
-        self.update_state() 
-        return self.get_status()
+        # Variables de Estado (0.0 a 1.0)
+        self.fibrosis_level = 0.85
+        self.hsc_activation_level = 0.90 
+        self.hepatocyte_viability = 0.45 
+        self.inflammation_level = 0.80  
+        self.genetic_risk = 1.0
+        
+        # Población de Agentes
+        self.kupffer_population = [KupfferCell() for _ in range(10)]
+        self.history = []
 
     def update_state(self):
         self.steps += 1
-        # Si las HSC están activas, la fibrosis sube 0.01
-        if self.hsc_activation_level < 0.45:
-            self.fibrosis_level -= 0.04
-            self.hsc_activation_level -= 0.01 
-        else:
-            # Si no hay tratamiento efectivo, la fibrosis sigue subiendo
-            self.fibrosis_level += 0.01
-        self._clamp_values()
+        
+        # 1. Censado
+        cytokine_levels = [
+            k.sense_and_react(self.hepatocyte_viability, self.genetic_risk) 
+            for k in self.kupffer_population
+        ]
+        self.inflammation_level = sum(cytokine_levels) / len(self.kupffer_population)
 
-    def _clamp_values(self):
-        self.fibrosis_level = max(0.0, min(1.0, self.fibrosis_level))
-        self.hsc_activation_level = max(0.0, min(1.0, self.hsc_activation_level))
-        self.hepatocyte_viability = max(0.0, min(1.0, self.hepatocyte_viability))
-        self.epigenetic_status = max(0.0, min(1.0, self.epigenetic_status))
+        # 2. Respuesta
+        if self.inflammation_level > 0.4:
+            self.hsc_activation_level = min(1.0, self.hsc_activation_level + 0.02)
+            self.hepatocyte_viability = max(0.0, self.hepatocyte_viability - 0.01)
+        
+        # 3. Remodelado
+        if self.hsc_activation_level > 0.6:
+            self.fibrosis_level = min(1.0, self.fibrosis_level + 0.01)
+        elif self.hsc_activation_level < 0.4:
+            self.fibrosis_level = max(0.0, self.fibrosis_level - 0.03)
+            self.hepatocyte_viability = min(1.0, self.hepatocyte_viability + 0.02)
 
-    def get_status(self):
-        return {
-            "step": self.steps,
-            "fibrosis_index": float(round(self.fibrosis_level, 4)),
-            "hsc_activation": float(round(self.hsc_activation_level, 4)),
-            "hepatocyte_viability": float(round(self.hepatocyte_viability, 4)),
-            "epigenetic_status": float(round(self.epigenetic_status, 4))
-        }
+        self.history.append({
+            "Step": self.steps,
+            "Fibrosis": self.fibrosis_level,
+            "Inflammation": self.inflammation_level
+        })
 
+    def inject_hormokine(self, potency, target_affinity):
+        effectiveness = potency * target_affinity
+        self.inflammation_level = max(0.05, self.inflammation_level - (effectiveness * 0.8))
+        self.hsc_activation_level = max(0.1, self.hsc_activation_level - (effectiveness * 0.6))
 
-
-
+# ALIAS DE SEGURIDAD (Por si algún test viejo busca el nombre anterior)
+LiverLobule = LiverModel
