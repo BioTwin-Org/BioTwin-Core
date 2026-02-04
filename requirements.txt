@@ -8,7 +8,8 @@ numpy==1.26.0
 requests==2.31.0
 py3Dmol==2.0.4
 stmol==0.0.9
+ipython_genutils==0.2.0
 
-# --- Testing & Quality (Para GitHub Actions) ---
+# --- Testing & Quality (CI/CD) ---
 pytest==8.0.0
 flake8==7.0.0
