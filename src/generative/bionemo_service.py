@@ -1,23 +1,14 @@
 import requests
-import random
-# Importación absoluta correcta basada en la estructura del proyecto
+# Usamos la ruta completa desde la raíz del proyecto
 from src.data_models.molecule import HormokineStructure
 
 class BioNeMoService:
-    """
-    Cliente para interactuar con NVIDIA BioNeMo (o simularlo).
-    """
-    
     def fetch_esmfold_structure(self, sequence: str) -> HormokineStructure:
-        """
-        Genera una estructura 3D simulada (Mock) para evitar latencia en demos.
-        """
-        # PDB Header mínimo válido
-        mock_pdb = "HEADER    MOCK STRUCTURE\nATOM      1  N   ALA A   1       0.000   0.000   0.000  1.00  0.00"
+        mock_pdb = "HEADER    MOCK\nATOM      1  N   ALA A   1       0.000   0.000   0.000"
         return HormokineStructure(
             pdb_content=mock_pdb,
             plddt_score=90.0,
-            molecular_weight=15.5
+            molecular_weight=15.0
         )
 
     def get_real_cytokine_structure(self, pdb_id="1ALU"):
