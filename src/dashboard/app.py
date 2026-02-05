@@ -84,30 +84,38 @@ with col_sim:
         st.rerun()
 
     # --- TELEMETRÍA Y GRÁFICOS ---
-    if len(st.session_state.model.history) > 0:
+        if len(st.session_state.model.history) > 0:
         df = pd.DataFrame(st.session_state.model.history)
         
-        # Selección segura de columnas (Corrige el KeyError)
-        available_cols = df.columns.tolist()
-        plot_cols = ["Fibrosis", "Inflammation"]
-        for v_name in ["Viability", "Hepatocyte Viability", "viability"]:
-            if v_name in available_cols:
-                plot_cols.append(v_name)
-                break
+        # 1. Identificamos qué columnas existen realmente
+        available = df.columns.tolist()
         
-        st.line_chart(df.set_index("Step")[plot_cols])
+        # 2. Seleccionamos las que queremos graficar (solo si existen)
+        # Esto evita el KeyError: "['Viability'] not in index"
+        plot_cols = []
+        for col in ["Fibrosis", "Inflammation", "Viability", "Hepatocyte Viability"]:
+            if col in available:
+                plot_cols.append(col)
         
-        # Métricas con indentación corregida para Flake8
+        # 3. Graficamos usando 'Step' como índice
+        if "Step" in available:
+            st.line_chart(df.set_index("Step")[plot_cols])
+        else:
+            st.line_chart(df[plot_cols])
+        
+        # --- MÉTRICAS INFERIORES ---
         m1, m2, m3 = st.columns(3)
         curr = st.session_state.model.get_status()
         
-        m1.metric("Fibrosis", f"{curr.get('fibrosis_index', 0):.2f}")
+        # Usamos .get() con un valor por defecto (0.0) para evitar que la app se rompa
+        m1.metric("Fibrosis Index", f"{curr.get('fibrosis_index', 0):.2f}")
         m2.metric("Inflammation", f"{curr.get('inflammation_level', 0):.2f}")
         
-        v_val = curr.get('Viability') or curr.get('Hepatocyte Viability') or curr.get('viability', 0)
-        m3.metric("Viability", f"{v_val:.2f}")
+        # Buscamos la viabilidad bajo cualquier nombre posible
+        v_val = curr.get('Viability') or curr.get('Hepatocyte Viability') or curr.get('hepatocyte_viability', 0)
+        m3.metric("Hepatocyte Viability", f"{v_val:.2f}")
     else:
-        st.warning("No telemetry data. Click 'Run Simulation' to start.")
+        st.info("Esperando datos de simulación... Haz clic en 'Run Simulation'."))
 
 with col_mol:
     st.subheader("Molecular Analysis")
