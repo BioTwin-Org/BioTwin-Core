@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
-from typing import Optional, Dict, Any
+from dataclasses import dataclass
+from typing import Optional
 
 @dataclass
 class HormokineStructure:
@@ -14,7 +14,7 @@ class HormokineStructure:
 @dataclass
 class Hormokine:
     """
-    La droga sintética final diseñada por la IA.
+    La entidad del fármaco diseñado.
     """
     id: str
     name: str
@@ -23,6 +23,6 @@ class Hormokine:
     structure: Optional[HormokineStructure] = None
     affinity_score: float = 0.0
     
-    # Atributos de compatibilidad para el Simulador (LiverModel)
+    # Atributos para compatibilidad con el simulador
     instruction_potency: float = 0.9
     predicted_affinity: float = 0.9
