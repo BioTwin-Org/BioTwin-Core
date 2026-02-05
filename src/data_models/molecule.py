@@ -1,31 +1,28 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import Optional, Dict, Any
 
 @dataclass
-class GenomicVariant:
+class HormokineStructure:
     """
-    Representa una mutación puntual (SNP) identificada por AlphaGenome.
+    Datos físicos de la estructura 3D (Salida de ESMFold).
     """
-    gene_symbol: str         # Ej: "IL6", "TGFB1"
-    rsid: str                # ID estándar de la variante (ej. rs1800795)
-    description: str         # Descripción clínica (ej. "Promoter region variant")
-    penetrance_factor: float # Multiplicador de impacto en la simulación (1.0 = Neutro)
+    pdb_content: str       # Cadena de texto con formato PDB
+    plddt_score: float     # Confianza del plegamiento (0-100)
+    molecular_weight: float # Peso en kDa
+    is_folded: bool = True
 
 @dataclass
-class PatientProfile:
+class Hormokine:
     """
-    El perfil genómico del Gemelo Digital.
-    Contiene la lista de variantes activas para un paciente específico.
+    La droga sintética final diseñada por la IA.
     """
-    patient_id: str
-    variants: List[GenomicVariant] = field(default_factory=list)
-
-    def calculate_cumulative_risk(self) -> float:
-        """
-        Calcula el factor de riesgo total combinando todas las variantes.
-        Utilizado por LiverModel para ajustar la agresividad de la inflamación.
-        """
-        risk_multiplier = 1.0
-        for variant in self.variants:
-            risk_multiplier *= variant.penetrance_factor
-        return round(risk_multiplier, 2)
+    id: str
+    name: str
+    sequence: str
+    target_receptor: str
+    structure: Optional[HormokineStructure] = None
+    affinity_score: float = 0.0
+    
+    # Atributos de compatibilidad para el Simulador (LiverModel)
+    instruction_potency: float = 0.9
+    predicted_affinity: float = 0.9
