@@ -1,23 +1,23 @@
-# src/generative/bionemo_service.py
-
 import requests
+import random
+# Importación absoluta correcta basada en la estructura del proyecto
 from src.data_models.molecule import HormokineStructure
 
 class BioNeMoService:
     """
-    Servicio de enlace con NVIDIA BioNeMo Cloud APIs.
-    Maneja la generación de secuencias y recuperación de estructuras PDB.
+    Cliente para interactuar con NVIDIA BioNeMo (o simularlo).
     """
-
+    
     def fetch_esmfold_structure(self, sequence: str) -> HormokineStructure:
         """
-        Simula la predicción de estructura 3D (ESMFold).
-        Devuelve un objeto tipado (HormokineStructure).
+        Genera una estructura 3D simulada (Mock) para evitar latencia en demos.
         """
-        # En producción, aquí haríamos POST a https://api.nvidia.com/bionemo/esmfold
-        # Usamos un HEADER mínimo para evitar errores de validación, 
-        # aunque este mock no se mostrará visualmente en el dashboard (usaremos el real).
-        mock_pdb = "HEADER    PROTEIN DATA BANK    1ALU" 
+        # PDB Header mínimo válido
+        mock_pdb = (
+            "HEADER    BIO-TWIN GENERATED STRUCTURE\n"
+            "ATOM      1  N   ALA A   1      -0.528   1.511   0.000  1.00  0.00           N\n"
+            "ATOM      2  CA  ALA A   1       0.000   0.000   0.000  1.00  0.00           C\n"
+        )
         
         return HormokineStructure(
             pdb_content=mock_pdb,
@@ -28,9 +28,8 @@ class BioNeMoService:
 
     def get_real_cytokine_structure(self, pdb_id="1ALU"):
         """
-        Método de utilidad para obtener datos reales del RCSB PDB 
-        para demostraciones técnicas visuales (IL-6 real).
-        Devuelve un diccionario compatible con st.session_state del dashboard.
+        Recupera un PDB real de RCSB para visualización en el Dashboard.
+        Esto asegura que el usuario vea una proteína bonita en pantalla.
         """
         url = f"https://files.rcsb.org/view/{pdb_id}.pdb"
         try:
@@ -38,10 +37,9 @@ class BioNeMoService:
             if response.status_code == 200:
                 return {
                     "pdb": response.text,
-                    "score": 94.2,
-                    "weight": 21.0,
-                    "name": "Interleukin-6 (IL-6) [Real Structure]"
+                    "score": 95.0,
+                    "name": "Interleukin-6 Real Structure"
                 }
-        except Exception as e:
-            print(f"Error fetching PDB: {e}")
-            return None
+        except Exception:
+            pass
+        return None
