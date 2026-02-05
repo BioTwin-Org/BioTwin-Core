@@ -114,12 +114,23 @@ with col_left:
         status_text.info("Simulation Complete")
 
     # Gráficas de Telemetría
-    if st.session_state.model.history:
-        df = pd.DataFrame(st.session_state.model.history)
-        
-        st.subheader("Tissue Response Telemetry")
-        chart_data = df.set_index("Step")[["Fibrosis", "Inflammation", "Viability"]]
-        st.line_chart(chart_data, color=["#ff4b4b", "#ffa500", "#00ff00"]) # Rojo, Naranja, Verde
+    # --- Gráficos en tiempo real ---
+if len(st.session_state.model.history) > 0:
+    df = pd.DataFrame(st.session_state.model.history)
+    
+    # Definimos qué columnas queremos mostrar
+    # Nota: Asegúrate de que estos nombres coincidan con los que devuelve tu LiverModel
+    cols_to_show = ["Fibrosis", "Inflammation"]
+    
+    # Agregamos Viability solo si existe en los datos
+    if "Viability" in df.columns:
+        cols_to_show.append("Viability")
+    elif "Hepatocyte Viability" in df.columns:
+        cols_to_show.append("Hepatocyte Viability")
+
+    # Creamos el gráfico de forma segura
+    st.line_chart(df.set_index("Step")[cols_to_show])
+
 
         # Métricas Numéricas en Tiempo Real (Último paso)
         curr = st.session_state.model
