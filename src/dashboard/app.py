@@ -113,20 +113,29 @@ with col_left:
             
         status_text.info("Simulation Complete")
 
-    # Gráficas de Telemetría
-    if st.session_state.model.history:
+    # Gráficos en tiempo real
+    if len(st.session_state.model.history) > 0:
         df = pd.DataFrame(st.session_state.model.history)
         
-        st.subheader("Tissue Response Telemetry")
-        chart_data = df.set_index("Step")[["Fibrosis", "Inflammation", "Viability"]]
-        st.line_chart(chart_data, color=["#ff4b4b", "#ffa500", "#00ff00"]) # Rojo, Naranja, Verde
+        # Selección segura de columnas
+        cols = ["Fibrosis", "Inflammation"]
+        if "Viability" in df.columns:
+            cols.append("Viability")
+        elif "Hepatocyte Viability" in df.columns:
+            cols.append("Hepatocyte Viability")
 
-        # Métricas Numéricas en Tiempo Real (Último paso)
-        curr = st.session_state.model
+        st.line_chart(df.set_index("Step")[cols])
+        
+        # --- SECCIÓN DE MÉTRICAS 
         m1, m2, m3 = st.columns(3)
-        m1.metric("Fibrosis Index", f"{curr.fibrosis_level:.2f}", delta=f"{(curr.fibrosis_level-0.85):.2f}")
-        m2.metric("Inflammation", f"{curr.inflammation_level:.2f}", delta=f"{(curr.inflammation_level-0.80):.2f}", delta_color="inverse")
-        m3.metric("Hepatocyte Health", f"{curr.hepatocyte_viability:.2f}", delta=f"{(curr.hepatocyte_viability-0.45):.2f}")
+        curr = st.session_state.model.get_status()  # Esta línea debe estar alineada con m1, m2, m3
+        
+        m1.metric("Fibrosis Index", f"{curr['fibrosis_index']:.2f}")
+        m2.metric("Inflammation", f"{curr['inflammation_level']:.2f}")
+        
+        # Verificación para la tercera métrica
+        v_key = 'Viability' if 'Viability' in curr else 'hepatocyte_viability'
+        m3.metric("Viability", f"{curr.get(v_key, 0):.2f}")
 
 with col_right:
     st.subheader("Structural Biology (3D)")
