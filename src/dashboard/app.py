@@ -84,35 +84,37 @@ with col_sim:
                 st.session_state[key] = None
         st.rerun()
 
-    # --- TELEMETRÍA Y GRÁFICOS ---
-    # Línea 88 aprox: Aseguramos que el bloque tenga contenido
+    # --- TELEMETRÍA Y GRÁFICOS (Versión Blindada) ---
     if len(st.session_state.model.history) > 0:
         df = pd.DataFrame(st.session_state.model.history)
         
-        # Selección segura de columnas
-        available_cols = df.columns.tolist()
-        plot_cols = ["Fibrosis", "Inflammation"]
+        # 1. Detectamos qué columnas existen realmente en el dataframe
+        columnas_reales = df.columns.tolist()
         
-        # Buscamos variaciones de 'Viability' para evitar el KeyError
-        for v_name in ["Viability", "Hepatocyte Viability", "viability"]:
-            if v_name in available_cols:
-                plot_cols.append(v_name)
-                break
+        # 2. Buscamos las que queremos graficar de forma flexible
+        columnas_a_graficar = []
+        for col en ["Fibrosis", "Inflammation", "Viability", "Hepatocyte Viability", "viability"]:
+            if col in columnas_reales:
+                columnas_a_graficar.append(col)
         
-        st.line_chart(df.set_index("Step")[plot_cols])
+        # 3. Graficamos usando 'Step' como índice solo si existe
+        if "Step" in columnas_reales:
+            st.line_chart(df.set_index("Step")[columnas_a_graficar])
+        else:
+            st.line_chart(df[columnas_a_graficar])
         
-        # Métricas
+        # --- MÉTRICAS ---
         m1, m2, m3 = st.columns(3)
         curr = st.session_state.model.get_status()
         
         m1.metric("Fibrosis Index", f"{curr.get('fibrosis_index', 0):.2f}")
         m2.metric("Inflammation", f"{curr.get('inflammation_level', 0):.2f}")
         
-        # Lógica de viabilidad para métrica
+        # Buscamos viabilidad bajo cualquier nombre para la métrica
         v_val = curr.get('Viability') or curr.get('Hepatocyte Viability') or curr.get('viability', 0)
         m3.metric("Viability", f"{v_val:.2f}")
     else:
-        st.info("Simulation engine ready. Click 'Run Simulation' to generate data.")
+        st.info("Simulación lista. Haz clic en 'Run Simulation' para generar telemetría.")
 
 with col_mol:
     st.subheader("Molecular Analysis")
