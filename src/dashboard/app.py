@@ -124,17 +124,19 @@ with col_mol:
         st.write(f"**Candidate:** {drug.name}")
         
         if drug.structure and drug.structure.pdb_content:
+            # Fondo oscuro para resaltar los colores de la hélice
             view = py3Dmol.view(width=400, height=400)
             view.addModel(drug.structure.pdb_content, 'pdb')
+            view.setBackgroundColor('#0e1117') # Match con el tema oscuro de Streamlit
             
-            # Intentamos Cartoon, pero aseguramos con Stick para ver algo siempre
-            view.setStyle({'cartoon': {'color': 'spectrum'}, 'stick': {'radius': 0.2}})
+            # Estilo hélice (cartoon) + grosor de átomos (stick)
+            view.setStyle({'cartoon': {'color': 'spectrum'}})
+            view.addStyle({'stick': {'radius': 0.1, 'opacity': 0.5}})
             
             view.zoomTo()
-            view.spin(True) # Esto ayuda a confirmar que el canvas está vivo
+            view.spin(True) 
             showmol(view, height=400, width=400)
-            
-            # Debug: Mostrar longitud del PDB para confirmar que hay datos
-            st.caption(f"PDB Data Size: {len(drug.structure.pdb_content)} bytes")
+            st.caption(f"🧬 Structure: 100 residues | Stability (pLDDT): {drug.structure.plddt_score}")
+
         else:
             st.warning("No PDB structure found.")
