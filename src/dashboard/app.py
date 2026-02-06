@@ -126,10 +126,15 @@ with col_mol:
         if drug.structure and drug.structure.pdb_content:
             view = py3Dmol.view(width=400, height=400)
             view.addModel(drug.structure.pdb_content, 'pdb')
-            view.setStyle({'cartoon': {'color': 'spectrum'}})
+            
+            # Intentamos Cartoon, pero aseguramos con Stick para ver algo siempre
+            view.setStyle({'cartoon': {'color': 'spectrum'}, 'stick': {'radius': 0.2}})
+            
             view.zoomTo()
+            view.spin(True) # Esto ayuda a confirmar que el canvas está vivo
             showmol(view, height=400, width=400)
+            
+            # Debug: Mostrar longitud del PDB para confirmar que hay datos
+            st.caption(f"PDB Data Size: {len(drug.structure.pdb_content)} bytes")
         else:
             st.warning("No PDB structure found.")
-    else:
-        st.info("Waiting for drug design sequences...")
