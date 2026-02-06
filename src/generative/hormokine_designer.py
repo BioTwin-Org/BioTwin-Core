@@ -5,6 +5,8 @@ from src.data_models.genomics import PatientGenotype
 class HormokineDesigner:
     def __init__(self):
         self.bionemo = BioNeMoService()
+    def design_batch(self, target, mechanism, genotype, n=5):
+         return [self._generate_one(target, mechanism, genotype) for _ in range(n)]
 
     def design_candidate(self, target_receptor: str, action: str, patient_profile: PatientGenotype = None) -> Hormokine:
         """
@@ -40,4 +42,5 @@ class HormokineDesigner:
             affinity_score=potency, # Mapeamos potencia a afinidad para simplificar
             instruction_potency=potency,
             predicted_affinity=potency
+
         )
