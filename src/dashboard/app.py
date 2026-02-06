@@ -49,7 +49,7 @@ with col_ctrl:
             drug = designer.design_candidate(target_select, "INHIBIT", st.session_state.genotype)
             st.session_state.active_drug = drug
             st.session_state.model_a.inject_hormokine(drug.instruction_potency, drug.predicted_affinity)
-
+            st.rerun()
     st.markdown("---")
     curr = st.session_state.model_a.get_status()
     st.metric("Tissue Viability", f"{curr['Viability']*100:.1f}%")
