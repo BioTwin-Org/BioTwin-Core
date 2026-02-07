@@ -72,6 +72,18 @@ with col_ctrl:
             st.session_state.active_drug = drug
             st.session_state.model_a.inject_hormokine(drug.instruction_potency, drug.predicted_affinity)
             st.rerun()
+    if st.button("🧬 AI Auto-Discovery Loop", use_container_width=True, type="primary"):
+        with st.status("Running Evolutionary Optimization...", expanded=True) as status:
+            st.write("Generating 5 protein variants...")
+            designer = HormokineDesigner()
+            # La IA elige el mejor de 5 intentos
+            best_drug = designer.optimize_design(target_select, str(st.session_state.genotype))
+            
+            st.write(f"Winner found: {best_drug.name} (Affinity: {best_drug.predicted_affinity:.2f})")
+            st.session_state.active_drug = best_drug
+            st.session_state.model_a.inject_hormokine(best_drug.instruction_potency, best_drug.predicted_affinity)
+            status.update(label="Optimization Complete!", state="complete", expanded=False)
+            st.rerun()
 
     st.markdown("---")
     curr = st.session_state.model_a.get_status()
