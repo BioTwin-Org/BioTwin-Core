@@ -46,20 +46,6 @@ with st.sidebar:
         st.session_state.clear()
         st.rerun()
 
-# --- SIDEBAR ---
-with st.sidebar:
-    st.title("🧬 BioTwin Controls")
-    st.header("1. Genomic Risk")
-    risk = st.session_state.genotype.calculate_risk_factor()
-    st.metric("Risk Factor", f"{risk}x", delta="High Risk")
-    
-    st.markdown("---")
-    target_select = st.selectbox("2. BioNeMo Target", ["TGFBR2", "IL-6R", "VEGFA"])
-    
-    if st.button("🔄 RESET SYSTEM", use_container_width=True):
-        st.session_state.clear()
-        st.rerun()
-
 # --- MAIN LAYOUT ---
 st.title("🧬 BioTwin Core: AI Auto-Discovery")
 
