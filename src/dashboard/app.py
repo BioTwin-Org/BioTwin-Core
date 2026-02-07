@@ -1,135 +1,126 @@
-import sys
-import os
-
-# --- PARCHE DE RUTAS ---
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 import numpy as np
 import time
+import json
 from stmol import showmol
 import py3Dmol
 
-# Importaciones del Core
 from src.model_containers.agent_based.liver_model import LiverModel
 from src.generative.hormokine_designer import HormokineDesigner
-from src.generative.alpha_genome_service import AlphaGenomeService
 
-# Configuración de página
-st.set_page_config(
-    page_title="BioTwin Core | Endogenous Reprogramming",
-    page_icon="🧬",
-    layout="wide"
-)
+st.set_page_config(page_title="BioTwin AI Discovery", layout="wide", page_icon="🚀")
 
-# --- SIDEBAR: Configuración del Paciente ---
+# --- LÓGICA DE CARGA DE DATOS ---
+def load_patient_data(uploaded_file):
+    if uploaded_file is not None:
+        return json.load(uploaded_file)
+    return None
+
+# --- INICIALIZACIÓN DE ESTADO ---
+if "model_a" not in st.session_state:
+    st.session_state.model_a = LiverModel(size=50, fibrosis_level=0.7, genetic_risk=1.5)
+    st.session_state.active_drug = None
+    st.session_state.clinical_note = ""
+
+# --- BARRA LATERAL ---
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/dna-helix.png", width=60)
-    st.title("BioTwin Controls")
+    st.title("📂 Patient Data Portal")
     
-    st.header("1. Genomic Stratification")
-    st.info("Powered by AlphaGenome™")
-    patient_id = st.text_input("Patient ID", "PT-2024-X99")
-    
-    genome_service = AlphaGenomeService()
-    
-    if "genotype" not in st.session_state:
-        st.session_state.genotype = None
+    uploaded_file = st.file_uploader("Upload Genomic Profile (.json)", type=["json"])
+    if uploaded_file:
+        data = load_patient_data(uploaded_file)
+        st.success(f"Loaded: {data['patient_id']}")
+        if st.button("🧬 SYNC DIGITAL TWIN", use_container_width=True):
+            st.session_state.model_a = LiverModel(
+                size=50, 
+                fibrosis_level=data['initial_fibrosis'], 
+                genetic_risk=data['genotype_risk']
+            )
+            st.rerun()
 
-    if st.button("Analyze Genome"):
-        with st.spinner("Sequencing variants..."):
-            time.sleep(1)
-            st.session_state.genotype = genome_service.fetch_patient_profile(patient_id)
-            st.success("Profile Loaded")
-
-    if st.session_state.genotype:
-        risk = st.session_state.genotype.calculate_risk_factor()
-        st.metric("Risk Factor", f"{risk}x", delta="High Risk" if risk > 1.2 else "Normal")
+    st.markdown("---")
+    
+    st.subheader("📊 Clinical Export")
+    df_history = pd.DataFrame(st.session_state.model_a.history)
+    if not df_history.empty:
+        csv_data = df_history.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 DOWNLOAD CSV REPORT",
+            data=csv_data,
+            file_name="biotwin_full_report.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
     
     st.markdown("---")
-    st.header("2. BioNeMo Design")
-    target = st.selectbox("Target Receptor", ["TGFBR2", "IL-6R", "EGFR"])
-    action = st.radio("Mechanism", ["INHIBIT", "ACTIVATE"])
-
-# --- MAIN PANEL ---
-st.title("🧬 Digital Twin: Tissue Response Monitor")
-
-col_sim, col_mol = st.columns([2, 1])
-
-with col_sim:
-    # Inicializar simulador
-    if "model" not in st.session_state:
-        g_risk = st.session_state.genotype.calculate_risk_factor() if st.session_state.genotype else 1.0
-        st.session_state.model = LiverModel(fibrosis_level=0.75, genetic_risk=g_risk)
-
-    c1, c2, c3 = st.columns(3)
+    st.subheader("⚙️ Simulation Settings")
+    target_select = st.selectbox("Target Receptor", ["TGFBR2", "IL-6R", "VEGFA", "PDGFR"])
     
-    if c1.button("▶ Run Simulation Step"):
-        st.session_state.model.update_state()
-    
-    if c2.button("💉 Inject Treatment"):
-        designer = HormokineDesigner()
-        candidate = designer.design_candidate(target, action, st.session_state.genotype)
-        st.session_state.model.inject_hormokine(
-            potency=candidate.instruction_potency, 
-            target_affinity=candidate.predicted_affinity
-        )
-        st.session_state.last_drug = candidate
-        st.toast(f"Treatment injected: {candidate.name}")
-
-    if c3.button("🔄 Reset System"):
-        for key in ["model", "last_drug"]:
-            if key in st.session_state:
-                st.session_state[key] = None
+    if st.button("♻️ RESET ALL", use_container_width=True):
+        st.session_state.clear()
         st.rerun()
 
-    # --- TELEMETRÍA Y GRÁFICOS (Versión Blindada) ---
-    if len(st.session_state.model.history) > 0:
-        df = pd.DataFrame(st.session_state.model.history)
-        
-        # 1. Detectamos qué columnas existen realmente en el dataframe
-        columnas_reales = df.columns.tolist()
-        
-        # 2. Buscamos las que queremos graficar de forma flexible
-        columnas_a_graficar = []
-        for col in ["Fibrosis", "Inflammation", "Viability", "Hepatocyte Viability", "viability"]:
-            if col in columnas_reales:
-                columnas_a_graficar.append(col)
-        
-        # 3. Graficamos usando 'Step' como índice solo si existe
-        if "Step" in columnas_reales:
-            st.line_chart(df.set_index("Step")[columnas_a_graficar])
-        else:
-            st.line_chart(df[columnas_a_graficar])
-        
-        # --- MÉTRICAS ---
-        m1, m2, m3 = st.columns(3)
-        curr = st.session_state.model.get_status()
-        
-        m1.metric("Fibrosis Index", f"{curr.get('fibrosis_index', 0):.2f}")
-        m2.metric("Inflammation", f"{curr.get('inflammation_level', 0):.2f}")
-        
-        # Buscamos viabilidad bajo cualquier nombre para la métrica
-        v_val = curr.get('Viability') or curr.get('Hepatocyte Viability') or curr.get('viability', 0)
-        m3.metric("Viability", f"{v_val:.2f}")
-    else:
-        st.info("Simulación lista. Haz clic en 'Run Simulation' para generar telemetría.")
+# --- PANEL PRINCIPAL ---
+st.title("🧬 BioTwin Core: AI Auto-Discovery")
 
+col_ctrl, col_map, col_mol = st.columns([1.2, 2, 1.5])
+
+with col_ctrl:
+    st.subheader("Discovery Engine")
+    
+    if st.button("🚀 IA AUTO-OPTIMIZE", type="primary", use_container_width=True):
+        with st.status("IA is screening candidates...") as status:
+            designer = HormokineDesigner()
+            risk_val = st.session_state.model_a.genetic_risk
+            
+            batch = designer.design_batch(target_select, "INHIBIT", str(risk_val), n=5)
+            best_drug = max(batch, key=lambda d: d.instruction_potency * d.predicted_affinity)
+            
+            time.sleep(1)
+            st.session_state.active_drug = best_drug
+            st.session_state.model_a.inject_hormokine(best_drug.instruction_potency, best_drug.predicted_affinity)
+            
+            potency_label = "ALTA" if best_drug.instruction_potency > 0.7 else "MODERADA"
+            st.session_state.clinical_note = f"**Insight:** Seleccionado **{best_drug.name}** con afinidad del {best_drug.predicted_affinity*100:.1f}%. Priorizado por potencia {potency_label} ante riesgo de {risk_val}x."
+            status.update(label=f"Optimized: {best_drug.name}", state="complete")
+            st.rerun()
+    
+    if st.button("▶ Run Simulation Step", use_container_width=True):
+        st.session_state.model_a.update_state()
+        st.rerun()
+
+    st.markdown("---")
+    curr = st.session_state.model_a.get_status()
+    st.metric("Tissue Viability", f"{curr['Viability']*100:.1f}%")
+    st.progress(curr['Toxicity'], text=f"Toxicity: {curr['Toxicity']*100:.1f}%")
+
+with col_map:
+    st.subheader("Live Spatial Tissue Map")
+    # El mapa se genera con los datos de la cuadrícula del modelo
+    fig = px.imshow(
+        st.session_state.model_a.grid,
+        color_continuous_scale=[[0, '#2ecc71'], [0.5, '#8b4513'], [1, '#e74c3c']],
+        zmin=0, zmax=2
+    )
+    fig.update_coloraxes(showscale=False)
+    fig.update_layout(height=450, margin=dict(l=0, r=0, b=0, t=0))
+    st.plotly_chart(fig, use_container_width=True, key=f"grid_{st.session_state.model_a.step}")
+    
+    if st.session_state.clinical_note:
+        st.info(st.session_state.clinical_note)
 
 with col_mol:
     st.subheader("Molecular Analysis")
-    if "last_drug" in st.session_state and st.session_state.last_drug:
-        drug = st.session_state.last_drug
-        st.write(f"**Candidate:** {drug.name}")
-        
-        if drug.structure and drug.structure.pdb_content:
-            view = py3Dmol.view(width=400, height=400)
-            view.addModel(drug.structure.pdb_content, 'pdb')
-            view.setStyle({'cartoon': {'color': 'spectrum'}})
-            view.zoomTo()
-            showmol(view, height=400, width=400)
-        else:
-            st.warning("No PDB structure found.")
+    if st.session_state.active_drug:
+        drug = st.session_state.active_drug
+        st.markdown(f"**ID:** `{drug.name}`")
+        view = py3Dmol.view(width=400, height=350)
+        view.addModel(drug.structure.pdb_content, 'pdb')
+        view.setStyle({'cartoon': {'color': 'spectrum'}})
+        view.zoomTo()
+        view.spin(True)
+        showmol(view, height=350, width=400)
     else:
-        st.info("Waiting for drug design sequences...")
+        st.info("Start IA Optimization to design protein.")
