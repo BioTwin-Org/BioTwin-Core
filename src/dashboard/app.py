@@ -75,7 +75,7 @@ with col_ctrl:
 
     st.markdown("---")
     curr = st.session_state.model_a.get_status()
-    st.metric("Tissue Viability", f"{curr['Viability']*100:.1f}%")
+    st.metric("Tissue Viability", f"{curr['viability']*100:.1f}%")
     
     st.subheader("⚠️ Toxicity Monitor")
     tox = curr['Toxicity']
