@@ -1,21 +1,50 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import numpy as np
 import time
+import json
 from stmol import showmol
 import py3Dmol
-
 from src.model_containers.agent_based.liver_model import LiverModel
 from src.generative.hormokine_designer import HormokineDesigner
-from src.generative.alpha_genome_service import AlphaGenomeService
 
 st.set_page_config(page_title="BioTwin AI Discovery", layout="wide", page_icon="🚀")
 
-# --- INICIALIZACIÓN ---
-if "model_a" not in st.session_state:
-    st.session_state.model_a = LiverModel(size=50, fibrosis_level=0.7, genetic_risk=1.7)
-    st.session_state.genotype = AlphaGenomeService().fetch_patient_profile("PT-2024-X99")
-    st.session_state.active_drug = None
+# --- LÓGICA DE CARGA DE DATOS ---
+def load_patient_data(uploaded_file):
+    if uploaded_file is not None:
+        data = json.load(uploaded_file)
+        return data
+    return None
+
+# --- SIDEBAR (ACTUALIZADA) ---
+with st.sidebar:
+    st.title("📂 Patient Data Portal")
+    
+    # Nuevo Uploader de archivos
+    uploaded_file = st.file_uploader("Upload Genomic Profile (.json)", type=["json"])
+    patient_data = load_patient_data(uploaded_file)
+    
+    if patient_data:
+        st.success(f"Loaded: {patient_data['patient_id']}")
+        st.json(patient_data)
+        if st.button("🧬 INITIALIZE WITH PATIENT DATA"):
+            st.session_state.model_a = LiverModel(
+                size=50, 
+                fibrosis_level=patient_data['initial_fibrosis'], 
+                genetic_risk=patient_data['genotype_risk']
+            )
+            st.session_state.genotype = patient_data['patient_id']
+            st.rerun()
+
+    st.markdown("---")
+    st.header("⚙️ Simulation Controls")
+    target_select = st.selectbox("Select Target Receptor", ["TGFBR2", "IL-6R", "VEGFA", "PDGFR"])
+    
+    if st.button("♻️ RESET SYSTEM", use_container_width=True):
+        st.session_state.clear()
+        st.rerun()
 
 # --- SIDEBAR ---
 with st.sidebar:
