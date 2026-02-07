@@ -7,87 +7,88 @@ from stmol import showmol
 from src.model_containers.agent_based.liver_model import LiverModel
 from src.generative.hormokine_designer import HormokineDesigner
 
-st.set_page_config(page_title="BioTwin AI Explorer", layout="wide", page_icon="🔬")
+st.set_page_config(page_title="BioTwin Final", layout="wide")
 
-# --- FUNCIONES DE CARGA ---
-def load_patient_data(file):
-    if file:
-        return json.load(file)
-    return None
+if "model" not in st.session_state:
+    st.session_state.model = LiverModel()
+    st.session_state.drug = None
 
-# --- INICIALIZACIÓN ---
-if "model_a" not in st.session_state:
-    st.session_state.model_a = LiverModel(size=50, fibrosis_level=0.6, genetic_risk=1.5)
-    st.session_state.active_drug = None
-
-# --- BARRA LATERAL (Fase C) ---
+# --- SIDEBAR ---
 with st.sidebar:
-    st.title("📂 Patient Data")
+    st.title("📂 Data & Config")
     
-    # Botón para cargar JSON
-    uploaded_file = st.file_uploader("Upload Patient Genomic JSON", type=["json"])
-    if uploaded_file:
-        data = load_patient_data(uploaded_file)
-        st.success(f"Loaded: {data.get('patient_id', 'Unknown')}")
-        st.json(data) # Previsualización rápida
-
+    # 1. CARGA DE JSON
+    up_file = st.file_uploader("Upload Patient JSON", type=["json"])
+    if up_file:
+        st.success("Patient Data Loaded")
+    
     st.markdown("---")
-    target_select = st.selectbox("Select Target Receptor", ["TGFBR2", "IL-6R", "VEGFA", "PDGFR"])
     
-    if st.button("♻️ RESET SYSTEM", use_container_width=True):
+    # 2. BOTÓN DE DESCARGA (RESTAURADO)
+    # Convertimos el historial a DataFrame
+    df_history = pd.DataFrame(st.session_state.model.history)
+    if not df_history.empty:
+        csv = df_history.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 DOWNLOAD REPORT (CSV)",
+            data=csv,
+            file_name="biotwin_report.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
+    
+    st.markdown("---")
+    target = st.selectbox("Target", ["TGFBR2", "IL-6R", "VEGFA"])
+    
+    if st.button("♻️ RESET SYSTEM"):
         st.session_state.clear()
         st.rerun()
 
-# --- PANEL PRINCIPAL ---
-st.title("🔬 Digital Twin: Spatial & AI Discovery")
+# --- MAIN ---
+st.title("🔬 BioTwin: AI & Spatial Analysis")
+c1, c2, c3 = st.columns([1, 2, 1.5])
 
-col_ctrl, col_map, col_mol = st.columns([1, 2, 1.5])
-
-with col_ctrl:
+with c1:
     st.subheader("Controls")
-    if st.button("▶ Run Simulation Step", use_container_width=True):
-        st.session_state.model_a.update_state()
+    if st.button("▶ Run Step"):
+        st.session_state.model.update_state()
+        st.rerun()
     
-    # BOTÓN FASE B (IA)
-    if st.button("🧬 AI AUTO-DISCOVERY", use_container_width=True, type="primary"):
-        with st.spinner("IA Evolutionary Loop..."):
-            designer = HormokineDesigner()
-            # La IA busca el mejor candidato automáticamente
-            best_drug = designer.optimize_design(target_select, "High Risk")
-            st.session_state.active_drug = best_drug
-            st.session_state.model_a.inject_hormokine(best_drug.instruction_potency, best_drug.predicted_affinity)
-            st.rerun()
+    # BOTÓN ROJO DE IA
+    if st.button("🧬 AI AUTO-DISCOVERY", type="primary"):
+        designer = HormokineDesigner()
+        best = designer.optimize_design(target, "High Risk")
+        st.session_state.drug = best
+        st.session_state.model.inject_hormokine(best.instruction_potency, best.predicted_affinity)
+        st.rerun()
 
-    st.markdown("---")
-    curr = st.session_state.model_a.get_status()
-    st.metric("Tissue Viability", f"{curr.get('Viability', 0)*100:.1f}%")
-    st.progress(curr.get('Toxicity', 0), text=f"Toxicity: {curr.get('Toxicity', 0)*100:.1f}%")
+    curr = st.session_state.model.get_status()
+    st.metric("Viability", f"{curr['Viability']*100:.1f}%")
+    st.progress(min(1.0, curr['Toxicity']), text="Toxicity")
 
-with col_map:
-    st.subheader("Spatial Tissue Distribution")
-    # Mapa de calor de 50x50 píxeles
-    fig = px.imshow(st.session_state.model_a.grid, 
-                    color_continuous_scale=[[0, '#2ecc71'], [0.5, '#8b4513'], [1, '#e74c3c']],
-                    zmin=0, zmax=2)
-    fig.update_layout(margin=dict(l=0, r=0, b=0, t=0), height=400)
-    st.plotly_chart(fig, use_container_width=True, key=f"spatial_grid_{st.session_state.model_a.step}")
-    st.caption("🟢 Healthy | 🟤 Fibrosis | 🔴 Inflammation")
+with c2:
+    st.subheader("Spatial Grid")
+    fig = px.imshow(st.session_state.model.grid, 
+                    color_continuous_scale=[[0, '#00ff00'], [1, '#8b4513']],
+                    zmin=0, zmax=1)
+    fig.update_layout(margin=dict(l=0,r=0,b=0,t=0), height=400)
+    st.plotly_chart(fig, use_container_width=True, key=f"g_{st.session_state.model.step}")
 
-with col_mol:
+with c3:
     st.subheader("Molecular Architecture")
-    if st.session_state.active_drug:
-        drug = st.session_state.active_drug
-        st.markdown(f"**Candidate:** `{drug.name}`")
+    if st.session_state.drug:
+        d = st.session_state.drug
+        st.markdown(f"**ID:** `{d.name}`")
         
-        # --- FIX VISOR 3D (Hélices Elegantes) ---
-        view = py3Dmol.view(width=400, height=350)
-        view.addModel(drug.structure.pdb_content, 'pdb')
-        # Fondo oscuro para resaltar el arcoíris
-        view.setBackgroundColor('#0e1117') 
-        # Estilo Ribbon/Cartoon grueso
-        view.setStyle({'cartoon': {'color': 'spectrum', 'thickness': 1.0}})
+        # VISOR 3D (ARCOÍRIS)
+        view = py3Dmol.view(width=450, height=400)
+        view.addModel(d.structure.pdb_content, 'pdb')
+        # Fondo oscuro
+        view.setBackgroundColor('#0e1117')
+        # Estilo Cartoon Spectrum (Arcoíris)
+        view.setStyle({'cartoon': {'color': 'spectrum', 'thickness': 1.2}})
         view.zoomTo()
         view.spin(True)
-        showmol(view, height=350, width=400)
+        showmol(view, height=400, width=450)
     else:
-        st.info("System Standby. Initiate AI Discovery or Manual Injection.")
+        st.info("Click 'AI AUTO-DISCOVERY' to see the protein.")
