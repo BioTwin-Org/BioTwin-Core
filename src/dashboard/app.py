@@ -44,7 +44,7 @@ with col_ctrl:
         with st.status("IA screening...") as status:
             designer = HormokineDesigner()
             risk_val = st.session_state.model_a.genetic_risk
-            batch = designer.design_batch(target_select, "INHIBIT", str(risk_val), n=5)
+            batch = designer.design_batch(target_select, "INHIBIT", risk_val, n=5)
             best_drug = max(batch, key=lambda d: d.instruction_potency * d.predicted_affinity)
             time.sleep(1)
             st.session_state.active_drug = best_drug
@@ -62,7 +62,6 @@ with col_ctrl:
 
 with col_map:
     st.subheader("Spatial Tissue Map")
-    # Indentación corregida a 4 espacios exactos
     fig = px.imshow(
         st.session_state.model_a.grid,
         color_continuous_scale=[[0, '#2ecc71'], [0.5, '#8b4513'], [1, '#e74c3c']],
@@ -86,4 +85,4 @@ with col_mol:
         view.spin(True)
         showmol(view, height=350, width=400)
     else:
-        st.info("Start IA Optimization.")    
+        st.info("Start IA Optimization.")
