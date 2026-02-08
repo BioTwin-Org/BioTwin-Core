@@ -67,7 +67,62 @@ Generador de moléculas terapéuticas.
 * Entorno virtual recomendado.
 
 ### 1. Clonar e Instalar
-```bash
-git clone [https://github.com/tu-usuario/BioTwin-Core.git](https://github.com/tu-usuario/BioTwin-Core.git)
+\`\`\`bash
+git clone https://github.com/tu-usuario/BioTwin-Core.git
 cd BioTwin-Core
 pip install -r requirements.txt
+\`\`\`
+*(Asegúrate de tener instalados: \`streamlit\`, \`pandas\`, \`plotly\`, \`py3Dmol\`, \`stmol\`, \`numpy\`)*
+
+### 2. Ejecutar la Plataforma
+\`\`\`bash
+export PYTHONPATH=\$PYTHONPATH:\$(pwd)
+streamlit run src/dashboard/app.py
+\`\`\`
+
+---
+
+## 📖 Guía de Uso Rápida
+
+1.  **Carga del Paciente (AlphaGenome):**
+    * En la barra lateral, sube tu archivo \`patient_demo.json\`.
+    * *Observa cómo cambian los signos vitales del gemelo digital.*
+
+2.  **Diseño del Fármaco:**
+    * Ve a la pestaña **"Single Patient Analysis"**.
+    * Selecciona un objetivo (Target) y mecanismo (Inhibit/Activate).
+    * Haz clic en **"🧬 Design Drug"**.
+    * Visualiza y descarga la estructura 3D (\`.pdb\`).
+
+3.  **Simulación Individual:**
+    * Haz clic en **"▶ Run Step"** para avanzar el tiempo.
+    * Monitorea la toxicidad hepática y la respuesta cardiaca en el ECG.
+
+4.  **Ensayo Poblacional:**
+    * Cambia a la pestaña **"Population Patterns"**.
+    * Haz clic en **"🚀 LAUNCH COHORT TRIAL"**.
+    * Analiza los gráficos para determinar la seguridad del fármaco.
+
+5.  **Consulta Médica:**
+    * Ve a la pestaña **"Doctor AI"**.
+    * Pregunta: *"How is the patient?"* o *"Summarize trial results"*.
+
+---
+
+## 📂 Estructura del Proyecto
+
+\`\`\`
+BioTwin-Core/
+├── src/
+│   ├── ai/                 # Cerebro del Doctor AI
+│   ├── dashboard/          # Interfaz Streamlit (App.py)
+│   ├── data_models/        # Estructuras de datos (Molecule)
+│   ├── generative/         # IA de diseño de fármacos & AlphaGenome
+│   └── model_containers/   # Modelos biológicos (Hígado, Corazón)
+├── patient_demo.json       # Datos de prueba
+└── README.md               # Documentación
+\`\`\`
+
+---
+
+Made with ❤️ by BioTwin Team using **Streamlit** & **Python**.
