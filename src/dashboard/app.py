@@ -101,9 +101,23 @@ with col_mol:
 with col_heart:
     st.subheader("3. Heart (Response)")
     
-    # Estado del Corazón
-    status_color = "green" if st.session_state.heart.status == "Normal Sinus Rhythm" else "red"
-    st.markdown(f"Status: **:{status_color}[{st.session_state.heart.status}]**")
+    # --- VISUALIZACIÓN DE LATIDO (CSS ANIMATION) ---
+    # Calculamos la velocidad de la animación basada en los BPM
+    bpm = st.session_state.heart.heart_rate
+    beat_duration = 60 / max(bpm, 1) # Segundos por latido
+    
+    st.markdown(f"""
+    <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+        <svg width="100" height="100" viewBox="0 0 24 24" fill="red" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z">
+                <animateTransform attributeName="transform" type="scale" values="1; 1.1; 1" dur="{beat_duration}s" repeatCount="indefinite" additive="sum" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+            </path>
+        </svg>
+    </div>
+    <div style="text-align: center; font-weight: bold; color: {'red' if st.session_state.heart.status != 'Normal Sinus Rhythm' else '#2ecc71'}">
+        {st.session_state.heart.status}
+    </div>
+    """, unsafe_allow_html=True)
     
     # Monitor ECG en Tiempo Real
     ecg_fig = go.Figure()
