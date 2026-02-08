@@ -1,38 +1,73 @@
-# 🧬 BioTwin Core: Endogenous Reprogramming Framework
+# 🧬 BioTwin Core: AI-Powered Digital Twin Platform
 
-**"The human body is an analog computer that can be programmed via molecular instructions."**
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
+![Streamlit](https://img.shields.io/badge/Streamlit-App-ff4b4b)
+![BioTwin](https://img.shields.io/badge/BioTwin-AlphaGenome-green)
+![Status](https://img.shields.io/badge/Status-Operational-brightgreen)
 
-BioTwin Core is an open-source framework designed to bridge Generative AI (**NVIDIA BioNeMo**) with Agent-Based Modeling (ABM) to design and simulate **Hormokines**: synthetic proteins programmed to execute specific epigenetic instructions in human tissue.
-
----
-
-## 👁️ Vision & Philosophy
-Traditional medicine often treats symptoms. BioTwin proposes a shift toward **Rational Biological Programming**. By using synthetic molecules as "software," we can send instructions to specific cell types to:
-1.  **Silence** pathological drivers (e.g., Fibrosis in Stellate Cells).
-2.  **Reactivate** regenerative pathways (e.g., Hepatocyte proliferation).
-3.  **Synchronize** tissue repair using environmental sensors (Smart Release).
+> **Precision Medicine Revolution:** Simulación de tejidos, diseño de fármacos con IA generativa y ensayos clínicos virtuales en una sola plataforma.
 
 ---
 
-## 🏗️ System Architecture
-The framework is built on a modular pipeline that ensures scientific rigor and computational efficiency.
+## 🚀 Descripción General
 
-### Core Components:
-* **Generative Layer (`src/generative/`):** Interfaces with BioNeMo/ESMFold to design sequences based on target receptors (TGFBR2, IL-6R).
-* **Genomic Layer (`src/data_models/genomics.py`):** Integrates AlphaGenome risk factors to stratify patient response.
-* **Simulation Engine (`src/model_containers/agent_based/`):** A Multi-Agent system (Kupffer & HSC) that simulates the crosstalk in the liver lobule.
-* **Validation Layer (`tests/`):** Automated CI pipeline to verify biological logic and therapeutic safety bounds.
+**BioTwin Core** es una plataforma avanzada de bioingeniería computacional que crea **Gemelos Digitales** de pacientes para probar terapias personalizadas antes de aplicarlas en el mundo real.
+
+El sistema integra biología de sistemas, modelado basado en agentes y **Genómica Computacional (AlphaGenome)** para simular cómo un fármaco específico afecta no solo al órgano objetivo (Hígado), sino también al sistema sistémico (Corazón).
 
 ---
 
-## 📁 Project Structure
-```text
-BioTwin-Core/
-├── src/
-│   ├── data_models/       # Molecule & Genomic Schemas
-│   ├── generative/       # AI Service (BioNeMo / ESMFold)
-│   ├── model_containers/ # ABM Logic (Liver Model)
-│   └── app.py            # Streamlit Interactive Dashboard
-├── tests/                # Pytest Suite (Logic Validation)
-├── requirements.txt      # Project Dependencies
-└── README.md             # Project Documentation
+## 🧠 Powered by AlphaGenome™
+
+El núcleo de la personalización de BioTwin reside en su módulo **AlphaGenome Service**.
+
+### ¿Qué es AlphaGenome?
+Es el motor de ingestión de datos genómicos que transforma datos crudos de pacientes en parámetros de simulación vivos.
+
+* **Entrada:** Archivos `.json` con perfil genético, biomarcadores y factores de riesgo.
+* **Procesamiento:**
+    * Decodifica el **Factor de Riesgo Genético** para ajustar la sensibilidad del tejido.
+    * Configura el **Nivel de Fibrosis Basal** del hígado virtual.
+    * Calibra la **Fisiología Cardiaca** (QTc basal, Frecuencia Cardiaca).
+* **Resultado:** Un Gemelo Digital que no es un modelo genérico, sino una réplica computacional de un paciente específico (ej. *PT-2024-X99*).
+
+---
+
+## 🌟 Características Principales
+
+### 1. 🔬 Análisis Espacial de Tejidos
+Simulación visual en tiempo real de la interacción fármaco-tejido.
+* **Liver Model:** Grilla de 50x50 agentes que simula células sanas, fibróticas e inflamadas.
+* **Dinámica:** Observa cómo la toxicidad se propaga o cómo el tejido se regenera.
+
+### 2. 🫀 Eje Cardio-Hepático (Multi-Organ Simulation)
+Simulación sistémica conectada.
+* **Monitor ECG en Tiempo Real:** Visualización de latidos y ondas QRS.
+* **Toxicidad Sistémica:** El fallo hepático libera citocinas que estresan al corazón, afectando la Fracción de Eyección (LVEF).
+
+### 3. 💊 Diseño de Hormocinas con IA
+Generador de moléculas terapéuticas.
+* Diseña proteínas 3D (archivos `.pdb`) optimizadas para receptores específicos (TGFBR2, IL-6R).
+* Visualizador molecular interactivo (Stick/Cartoon/Spectrum).
+
+### 4. 📊 Ensayos Clínicos Virtuales (Fase II)
+* Simulación masiva de cohortes (N=50 pacientes).
+* Analítica de patrones: Descubre correlaciones entre riesgo genético y fallo terapéutico.
+* Gráficos de dispersión y distribución de toxicidad.
+
+### 5. 💬 Doctor AI Assistant
+* Chatbot médico integrado capaz de leer el estado de la simulación y resumir resultados de ensayos clínicos en lenguaje natural.
+
+---
+
+## 🛠️ Instalación y Uso
+
+### Prerrequisitos
+* Python 3.8+
+* Entorno virtual recomendado.
+
+### 1. Clonar e Instalar
+```bash
+git clone [https://github.com/tu-usuario/BioTwin-Core.git](https://github.com/tu-usuario/BioTwin-Core.git)
+cd BioTwin-Core
+pip install -r requirements.txt
