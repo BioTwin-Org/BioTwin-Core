@@ -1,0 +1,7 @@
+ {
+    "patient_id": "PT-7721-B",
+    "genotype_risk": 1.95,
+    "initial_fibrosis": 0.82,
+    "variants": ["PNPLA3-G", "TM6SF2-T"],
+    "description": "Perfil metabólico de alto riesgo con fibrosis avanzada."
+}
