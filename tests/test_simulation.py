@@ -1,43 +1,43 @@
+# tests/test_simulation.py
 import pytest
-from src.model_containers.agent_based.liver_model import LiverLobule
-from src.data_models.schemas import Hormokine, TargetProfile
+from src.model_containers.agent_based.liver_model import LiverModel
 
-def test_fibrosis_reduction():
-    """
-    Test that a valid Hormokine actually reduces fibrosis by 
-    deactivating HSCs.
-    """
-    liver = LiverLobule(fibrosis_level=0.9)
+def test_initial_state():
+    """Verifica que el modelo inicie con los valores patológicos correctos"""
+    model = LiverModel()
+    assert model.fibrosis_level == 0.85
+    assert model.inflammation_level == 0.80
+    assert len(model.kupffer_cells) == 5
+
+def test_model_update_cycle():
+    """Verifica que un paso de simulación actualice el historial y los estados"""
+    model = LiverModel()
+    model.update_state()
+    assert model.steps == 1
+    assert len(model.history) == 1
+    # Verificamos que los valores se mantengan en el rango [0, 1]
+    assert 0 <= model.fibrosis_level <= 1
+
+def test_hormokine_impact():
+    """Verifica que la inyección de Hormokina reduzca la inflamación"""
+    model = LiverModel()
+    initial_inf = model.inflammation_level
     
-    # Perfect drug for the new multi-agent model
-    perfect_drug = Hormokine(
-        sequence="AAAAA",
-        predicted_affinity=0.95,
-        instruction_potency=1.0,
-        target=TargetProfile(
-            cell_type="stellate",
-            receptor="TGFBR2",
-            action="INHIBIT"
-        )
-    )
-
-    result = liver.inject_treatment(perfect_drug)
-
-    # Ahora, con la potencia aumentada, 0.9 - 0.05 + 0.01 = 0.86. 
-    # 0.86 < 0.9 es VERDADERO.
-    assert result['fibrosis_index'] < 0.9, f"Fibrosis {result['fibrosis_index']} >= 0.9"
-    assert result['hsc_activation'] < 1.0
-
-def test_regeneration_pathway():
-    liver = LiverLobule(fibrosis_level=0.5)
-    initial_health = liver.get_status()['hepatocyte_viability']
+    # Simulamos inyección con potencia alta
+    model.inject_hormokine(potency=0.9)
     
-    regen = Hormokine(
-        sequence="REGEN",
-        predicted_affinity=0.9,
-        instruction_potency=0.5,
-        target=TargetProfile(cell_type="hepatocyte", receptor="EGFR", action="ACTIVATE")
-    )
+    assert model.inflammation_level < initial_inf
+    assert model.hsc_activation_level < 0.90
+
+def test_kupffer_polarization():
+    """Verifica que las células de Kupffer cambien de estado según la salud"""
+    model = LiverModel()
+    # Forzamos un estado saludable
+    model.hepatocyte_viability = 0.9
+    model.hsc_activation_level = 0.1
     
-    status = liver.inject_treatment(regen)
-    assert status['hepatocyte_viability'] > initial_health
+    # Ejecutamos ciclo para que las Kupffer 'censar' el nuevo estado
+    model.update_state()
+    
+    # El promedio de inflamación debería empezar a bajar hacia M2
+    assert model.inflammation_level < 0.80
